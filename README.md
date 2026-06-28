@@ -2,6 +2,10 @@
 
 교회학교 선생님이 아이별 달란트 지급, 누적 달란트, 관찰 메모를 기록하는 모바일 우선 웹앱입니다.
 
+## 사이트 주소
+
+https://hty9330-sys.github.io/talent-bible-school/
+
 ## 실행
 
 ```powershell
