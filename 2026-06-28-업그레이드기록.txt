@@ -1,0 +1,56 @@
+작업 날짜: 2026-06-28
+
+대상 원본 파일:
+- 신규 작업이므로 기존 원본 파일 없음
+
+생성된 업그레이드 파일:
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\index.html
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\server.js
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\package.json
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\.env.example
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\README.md
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\src\app.jsx
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\src\2026-06-28-app.js
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\src\styles.css
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\src\supabase.js
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28\supabase\schema.sql
+
+업그레이드 목적:
+- 달란트 성경학교에서 선생님과 관리자가 아이별 달란트 지급, 누적 달란트, 관찰 메모를 관리할 수 있는 첫 버전 웹앱 제작
+
+변경 전 문제점:
+- 신규 요청으로 기존 앱이 없었음
+
+변경한 내용과 이유:
+- React 기반 단일 페이지 앱을 생성함
+- 로그인, 홈, 아이 목록, 아이 상세, 달란트 지급, 메모 작성, 관리자 화면을 구현함
+- Supabase 연결 전에도 화면을 확인할 수 있도록 샘플 데이터 모드를 포함함
+- 선생님이 스마트폰에서 빠르게 사용할 수 있도록 큰 버튼과 모바일 우선 레이아웃으로 구성함
+- 관리자 화면에는 아이 등록, 전체 지급 기록, 전체 메모 수 확인 영역을 구성함
+- 빈 화면 문제를 해결하기 위해 React/Babel CDN 의존 실행 경로를 제거하고 순수 JavaScript 샘플 모드 실행 파일을 추가함
+- index.html은 src\2026-06-28-app.js를 직접 로드하도록 수정함
+
+데이터베이스 또는 설정 변경 사항:
+- Supabase용 SQL 스키마를 supabase\schema.sql에 작성함
+- users, students, talent_transactions, student_notes 테이블을 포함함
+- talent_transactions insert 후 students.total_talents가 자동 증가하는 트리거를 포함함
+- public 스키마 테이블에 RLS를 활성화하고 관리자/선생님 정책을 작성함
+- 관리자 권한 확인은 RLS 재귀를 피하기 위해 private.current_user_role() 함수로 분리함
+- 실제 Supabase URL과 anon key는 앱 설정 화면에서 입력하도록 구성함
+
+실행 및 검증 결과:
+- Codex 번들 Node.js로 정적 서버 실행 가능하도록 server.js를 작성함
+- 임시 서버 검증에서 http://localhost:4173 응답 코드 200 확인
+- 지속 실행용 서버를 http://localhost:4174 로 띄우고 응답 코드 200 확인
+- 빈 화면 수정 후 http://localhost:4176 응답 코드 200 확인
+- http://localhost:4176/src/2026-06-28-app.js 응답 코드 200 확인
+- 5초 후 http://localhost:4176 재확인 응답 코드 200 확인
+
+알려진 문제와 추가 개선 후보:
+- 실제 Supabase 프로젝트 적용 후 Auth user id와 public.users.id를 맞춰 사용자 프로필을 등록해야 함
+- 관리자 기능 중 선생님 등록, 권한 변경, 아이 수정/비활성화 UI는 다음 단계에서 확장 필요
+- 2차 개발로 상점, 달란트 사용/차감, 교환 기록, 통계 화면 추가 가능
+
+이전 버전으로 복구하는 방법:
+- 신규 작업이므로 복구할 기존 버전 없음
+- 작업본을 제거하려면 C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28 폴더를 삭제하면 됨
