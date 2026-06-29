@@ -73,3 +73,9 @@ GitHub Pages 업로드:
 - public.users 역할: admin
 - 기본 학생 seed 확인: 3명
 - 이제 앱에서 hty9330@gmail.com 계정으로 로그인 가능하다.
+
+2026-06-29 주간 성경 한글 해석 추가
+- weekly_bible_lessons 테이블에 verse_ko 컬럼을 추가했다.
+- 관리자 화면에서 영어 본문과 한글 개역개정 해석을 함께 저장한다.
+- 성경 화면은 영어 말씀 아래에 한글 해석을 함께 보여준다.
+- 최신 검증 주소: https://hty9330-sys.github.io/talent-bible-school/?v=20260629-9

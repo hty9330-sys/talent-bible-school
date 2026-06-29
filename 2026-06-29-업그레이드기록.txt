@@ -43,6 +43,10 @@
 - index.html 자산 캐시 버전을 v=20260629-8로 갱신
 - Supabase 운영 DB에 weekly_bible_lessons 테이블과 RLS 정책을 적용함
 - 관리자 권한 컨텍스트로 weekly_bible_lessons 저장 흐름 롤백 테스트 성공, 실제 테스트 데이터는 남기지 않음
+- 관리자 화면의 이번 주 성경 구절 폼에 한글 개역개정 해석 입력칸을 추가함
+- 성경 화면에서 영어 말씀 아래에 한글 개역개정 해석이 함께 보이도록 수정함
+- Supabase 운영 DB의 weekly_bible_lessons 테이블에 verse_ko 컬럼을 추가함
+- index.html 자산 캐시 버전을 v=20260629-9로 갱신
 
 알려진 문제와 추가 개선 후보:
 - Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함

@@ -495,6 +495,28 @@ textarea {
   font-weight: 900;
 }
 
+.translation-panel {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #d7ded4;
+  border-radius: 8px;
+  background: #f6fbf2;
+  padding: 14px;
+}
+
+.translation-panel h3 {
+  margin: 0;
+  color: #2f6f63;
+  font-size: 1rem;
+}
+
+.translation-panel p {
+  margin: 0;
+  color: #334036;
+  line-height: 1.65;
+  font-weight: 800;
+}
+
 .bible-record {
   border-left: 5px solid #2f6f63;
 }
