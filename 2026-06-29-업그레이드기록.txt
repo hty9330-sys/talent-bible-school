@@ -35,6 +35,8 @@
 - public.complete_bible_lesson 함수 권한 확인: security_definer=false, authenticated execute 권한 확인
 - 관리자 컨텍스트로 RPC 롤백 테스트 성공, 실제 데이터는 남기지 않음
 - 2026-06-29-app.js Node 문법 검사 통과
+- Google 로그인 시 계정 선택 화면이 뜨도록 OAuth queryParams prompt=select_account 옵션 추가
+- index.html 자산 캐시 버전을 v=20260629-7로 갱신
 
 알려진 문제와 추가 개선 후보:
 - Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함
