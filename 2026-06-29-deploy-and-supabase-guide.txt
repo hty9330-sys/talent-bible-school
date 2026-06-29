@@ -34,7 +34,7 @@ GitHub Pages 업로드:
 - 프로젝트: hty9330-sys's Project (vxqjhxrazedmaixpkgkp)
 - 적용 마이그레이션: add_auth_bible_learning_persistence
 - 보강 마이그레이션: tighten_talent_bible_rls_policies
-- 생성/확인 테이블: users, students, talent_transactions, student_notes, bible_learning_records
+- 생성/확인 테이블: users, students, talent_transactions, student_notes, bible_learning_records, weekly_bible_lessons
 - RLS 정책 확인 완료
 - 보안 어드바이저 확인: 새 앱 테이블 관련 과도한 students INSERT 정책 경고 해소
 - 남은 어드바이저 항목: 기존 profiles/todos/holdings/trade 계열 테이블 및 Auth leaked password protection 설정

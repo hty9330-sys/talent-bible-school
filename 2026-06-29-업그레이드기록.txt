@@ -37,6 +37,12 @@
 - 2026-06-29-app.js Node 문법 검사 통과
 - Google 로그인 시 계정 선택 화면이 뜨도록 OAuth queryParams prompt=select_account 옵션 추가
 - index.html 자산 캐시 버전을 v=20260629-7로 갱신
+- 관리자 화면에서 이번 주 성경 구절을 저장할 수 있도록 weekly_bible_lessons 테이블과 입력 폼 추가
+- 성경 화면이 최신 활성 구절을 불러와 말씀 읽기 문장과 단어 카드를 자동 생성하도록 수정
+- 단어 카드는 초등학생이 어려워할 가능성이 큰 영어 단어를 최대 16개까지 자동 추출하도록 수정
+- index.html 자산 캐시 버전을 v=20260629-8로 갱신
+- Supabase 운영 DB에 weekly_bible_lessons 테이블과 RLS 정책을 적용함
+- 관리자 권한 컨텍스트로 weekly_bible_lessons 저장 흐름 롤백 테스트 성공, 실제 테스트 데이터는 남기지 않음
 
 알려진 문제와 추가 개선 후보:
 - Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함
