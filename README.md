@@ -6,6 +6,10 @@
 
 https://hty9330-sys.github.io/talent-bible-school/
 
+최신 검증 주소:
+
+https://hty9330-sys.github.io/talent-bible-school/?v=20260629-6
+
 ## 실행
 
 ```powershell

@@ -1,0 +1,46 @@
+작업 날짜: 2026-06-29
+
+대상 원본 파일:
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\index.html
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\2026-06-29-app.js
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\schema.sql
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\supabase\schema.sql
+
+생성된 업그레이드 파일:
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\supabase\2026-06-29-complete-bible-lesson-rpc.sql
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\2026-06-29-업그레이드기록.txt
+
+업그레이드 목적:
+- 실제 운영용 달란트 성경학교 웹앱의 Supabase 권한, RLS, 성경 학습 완료 흐름, 배포 캐시를 검증하고 보강
+
+변경 전 문제점:
+- 성경 학습 완료 시 bible_learning_records insert와 talent_transactions insert가 브라우저에서 따로 실행되어 중간 실패 시 기록 불일치가 생길 수 있었음
+- 관리자 화면의 아이 삭제 버튼이 즉시 비활성화되어 실수 클릭 방지가 부족했음
+- 페이지 URL의 v 파라미터가 HTML에는 적용되지만 JS/CSS 자산에는 직접 적용되지 않아 브라우저 캐시가 오래 남을 수 있었음
+
+변경한 내용과 이유:
+- public.complete_bible_lesson RPC 함수를 추가해 성경 학습 기록과 달란트 지급 기록을 하나의 DB 트랜잭션으로 처리함
+- completeBibleLesson 프론트 함수가 직접 insert 두 번을 하지 않고 RPC를 호출하도록 수정함
+- 관리자 아이 삭제/비활성화 전에 window.confirm 확인창을 띄우도록 수정함
+- index.html의 CSS/JS 경로에 v=20260629-6을 붙여 배포 후 새 자산을 확실히 받도록 수정함
+
+데이터베이스 또는 설정 변경 사항:
+- Supabase 프로젝트 eesdzgehomzccrrykrqb에 public.complete_bible_lesson 함수를 적용함
+- 함수는 SECURITY INVOKER이며 authenticated 역할에만 execute 권한을 부여함
+- public/anon에는 함수 실행 권한을 부여하지 않음
+
+실행 및 검증 결과:
+- Supabase security advisor 실행 결과 신규 보안 경고 없음
+- 기존 경고: Leaked Password Protection Disabled
+- public.complete_bible_lesson 함수 권한 확인: security_definer=false, authenticated execute 권한 확인
+- 관리자 컨텍스트로 RPC 롤백 테스트 성공, 실제 데이터는 남기지 않음
+- 2026-06-29-app.js Node 문법 검사 통과
+
+알려진 문제와 추가 개선 후보:
+- Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함
+- 실제 관리자/선생님 계정으로 Google 로그인, 아이 등록, 보호자 연결, 성경 학습 완료까지 수동 E2E 테스트 필요
+- 선생님이 다른 선생님 이름을 볼 수 있어야 한다면 users select 정책을 별도로 조정할 수 있음
+
+이전 버전으로 복구하는 방법:
+- GitHub에서 직전 커밋으로 되돌리거나 index.html의 v 파라미터를 이전 값으로 복원함
+- DB RPC 함수만 제거하려면 drop function public.complete_bible_lesson(uuid, text, text, integer, integer); 실행
