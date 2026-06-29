@@ -8,7 +8,7 @@ https://hty9330-sys.github.io/talent-bible-school/
 
 최신 검증 주소:
 
-https://hty9330-sys.github.io/talent-bible-school/?v=20260629-9
+https://hty9330-sys.github.io/talent-bible-school/?v=20260629-10
 
 ## 실행
 

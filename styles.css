@@ -495,6 +495,33 @@ textarea {
   font-weight: 900;
 }
 
+.speed-control {
+  display: grid;
+  grid-template-columns: 1fr repeat(3, minmax(72px, auto));
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-control span {
+  color: #647064;
+  font-weight: 900;
+}
+
+.speed-control button {
+  min-height: 42px;
+  border: 1px solid #d7ded4;
+  border-radius: 8px;
+  background: #fffefb;
+  color: #334036;
+  font-weight: 900;
+}
+
+.speed-control button.active {
+  border-color: #2f6f63;
+  background: #2f6f63;
+  color: #fff;
+}
+
 .translation-panel {
   display: grid;
   gap: 8px;
@@ -537,6 +564,14 @@ textarea {
   .word-grid,
   .action-row {
     grid-template-columns: 1fr;
+  }
+
+  .speed-control {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .speed-control span {
+    grid-column: 1 / -1;
   }
 
   .bottom-nav {

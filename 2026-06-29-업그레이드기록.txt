@@ -47,6 +47,8 @@
 - 성경 화면에서 영어 말씀 아래에 한글 개역개정 해석이 함께 보이도록 수정함
 - Supabase 운영 DB의 weekly_bible_lessons 테이블에 verse_ko 컬럼을 추가함
 - index.html 자산 캐시 버전을 v=20260629-9로 갱신
+- 성경 영어 말씀 듣기에 읽기 속도 조절 버튼(천천히/보통/빠르게)을 추가함
+- index.html 자산 캐시 버전을 v=20260629-10으로 갱신
 
 알려진 문제와 추가 개선 후보:
 - Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함
