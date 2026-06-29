@@ -30,7 +30,7 @@ const bibleWordGlossary = {
 const state = {
   view: "home", message: "", loading: false, selectedStudentId: "", amount: 1, reason: "출석", speechRate: 0.82,
   config: loadConfig(), client: null, session: null, profile: null,
-  students: [], transactions: [], notes: [], bibleRecords: [], users: [], guardianLinks: [], bibleLesson
+  authSubscription: null, students: [], transactions: [], notes: [], bibleRecords: [], users: [], guardianLinks: [], bibleLesson
 };
 function loadConfig() { try { return JSON.parse(localStorage.getItem(CONFIG_KEY) || "null"); } catch { return null; } }
 function saveConfig(config) { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); state.config = config; }
@@ -48,48 +48,61 @@ function setView(view) { state.view = view; state.message = ""; render(); }
 function selectStudent(studentId, nextView = "student") { state.selectedStudentId = studentId; setView(nextView); }
 async function initSupabase() {
   if (!isConfigured()) return;
-  state.client = window.supabase.createClient(state.config?.url || DEFAULT_SUPABASE_URL, state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY);
+  state.authSubscription?.unsubscribe?.();
+  state.client = window.supabase.createClient(state.config?.url || DEFAULT_SUPABASE_URL, state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
   const { data } = await state.client.auth.getSession();
   state.session = data.session;
   if (state.session) await loadRemoteData();
-  state.client.auth.onAuthStateChange(async (_event, session) => {
+  const { data: listener } = state.client.auth.onAuthStateChange((_event, session) => {
     state.session = session;
-    if (session) { await loadRemoteData(); state.view = "home"; } else { clearRemoteState(); state.view = "login"; }
-    render();
+    if (!session) { clearRemoteState(); state.view = "login"; render(); return; }
+    window.setTimeout(async () => {
+      await loadRemoteData();
+      state.view = "home";
+      render();
+    }, 0);
   });
+  state.authSubscription = listener.subscription;
 }
 function clearRemoteState() { state.profile = null; state.students = []; state.transactions = []; state.notes = []; state.bibleRecords = []; state.users = []; state.guardianLinks = []; state.bibleLesson = bibleLesson; }
 async function loadRemoteData() {
   if (!state.client || !state.session) return;
   state.loading = true; render();
-  const userId = state.session.user.id;
-  const profileResult = await state.client.from("users").select("id,name,email,role").eq("id", userId).maybeSingle();
-  if (profileResult.data) state.profile = profileResult.data;
-  const [studentResult, transactionResult, noteResult, bibleResult, lessonResult] = await Promise.all([
-    state.client.from("students").select("*").eq("is_active", true).order("name"),
-    state.client.from("talent_transactions").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80),
-    isStaff() ? state.client.from("student_notes").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80) : Promise.resolve({ data: [] }),
-    state.client.from("bible_learning_records").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80),
-    state.client.from("weekly_bible_lessons").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle()
-  ]);
-  state.students = studentResult.data || [];
-  state.transactions = (transactionResult.data || []).map(mapTransaction);
-  state.notes = (noteResult.data || []).map(mapNote);
-  state.bibleRecords = (bibleResult.data || []).map(mapBibleRecord);
-  state.bibleLesson = normalizeBibleLesson(lessonResult.data);
-  if (isAdmin()) {
-    const [usersResult, linksResult] = await Promise.all([
-      state.client.from("users").select("id,name,email,role").order("name"),
-      state.client.from("student_guardians").select("*").order("created_at", { ascending: false })
+  try {
+    const userId = state.session.user.id;
+    const profileResult = await state.client.from("users").select("id,name,email,role").eq("id", userId).maybeSingle();
+    if (profileResult.data) state.profile = profileResult.data;
+    const [studentResult, transactionResult, noteResult, bibleResult, lessonResult] = await Promise.all([
+      state.client.from("students").select("*").eq("is_active", true).order("name"),
+      state.client.from("talent_transactions").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80),
+      isStaff() ? state.client.from("student_notes").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80) : Promise.resolve({ data: [] }),
+      state.client.from("bible_learning_records").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80),
+      state.client.from("weekly_bible_lessons").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(1).maybeSingle()
     ]);
-    state.users = usersResult.data || [];
-    state.guardianLinks = linksResult.data || [];
-  } else {
-    state.users = [];
-    state.guardianLinks = [];
+    state.students = studentResult.data || [];
+    state.transactions = (transactionResult.data || []).map(mapTransaction);
+    state.notes = (noteResult.data || []).map(mapNote);
+    state.bibleRecords = (bibleResult.data || []).map(mapBibleRecord);
+    state.bibleLesson = normalizeBibleLesson(lessonResult.data);
+    if (isAdmin()) {
+      const [usersResult, linksResult] = await Promise.all([
+        state.client.from("users").select("id,name,email,role").order("name"),
+        state.client.from("student_guardians").select("*").order("created_at", { ascending: false })
+      ]);
+      state.users = usersResult.data || [];
+      state.guardianLinks = linksResult.data || [];
+    } else {
+      state.users = [];
+      state.guardianLinks = [];
+    }
+    state.selectedStudentId = state.students[0]?.id || "";
+  } catch (error) {
+    state.message = error.message || "로그인 정보를 불러오지 못했습니다.";
+  } finally {
+    state.loading = false;
   }
-  state.selectedStudentId = state.students[0]?.id || "";
-  state.loading = false;
 }
 function mapTransaction(item) { return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" }; }
 function mapNote(item) { return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" }; }
@@ -171,9 +184,10 @@ function studentSelect(selectedId) { return `<label>아이 선택<select name="s
 function transactionFeed(title, items) { return `<section class="feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">기록이 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b> · ${escapeHtml(item.reason)}</span><strong>+${item.amount}</strong><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small>${item.memo ? `<p>${escapeHtml(item.memo)}</p>` : ""}</button>`).join("")}</section>`; }
 function noteFeed(title, items) { return `<section class="feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">메모가 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item note" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b></span><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small><p>${escapeHtml(item.note)}</p></button>`).join("")}</section>`; }
 function bibleFeed(title, items) { return `<section class="feed bible-feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">성경 학습 기록이 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item bible-record" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b> · ${escapeHtml(item.lesson_title)}</span><strong>+${item.talents_awarded || 0}</strong><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small><p>${escapeHtml(item.verse_ref)}</p></button>`).join("")}</section>`; }
-async function signIn(form) { if (!state.client) await initSupabase(); const email = String(form.get("email") || "").trim(); const password = String(form.get("password") || ""); const { error } = await state.client.auth.signInWithPassword({ email, password }); if (error) setMessage(error.message); }
-async function signInWithGoogle() { if (!state.client) await initSupabase(); const redirectTo = `${window.location.origin}${window.location.pathname}`; const { error } = await state.client.auth.signInWithOAuth({ provider: "google", options: { redirectTo, queryParams: { prompt: "select_account" } } }); if (error) setMessage(error.message); }
-async function signOut() { if (state.client) await state.client.auth.signOut(); state.session = null; clearRemoteState(); state.view = "login"; render(); }
+function cleanAuthUrl() { if (window.location.hash || window.location.search) window.history.replaceState({}, document.title, window.location.pathname); }
+async function signIn(form) { if (!state.client) await initSupabase(); state.message = "로그인 중입니다."; render(); const email = String(form.get("email") || "").trim(); const password = String(form.get("password") || ""); const { data, error } = await state.client.auth.signInWithPassword({ email, password }); if (error) return setMessage(error.message); state.session = data.session; await loadRemoteData(); state.message = "로그인했습니다."; state.view = "home"; render(); }
+async function signInWithGoogle() { if (!state.client) await initSupabase(); state.message = "Google 로그인 화면으로 이동합니다."; render(); const redirectTo = `${window.location.origin}${window.location.pathname}`; const { error } = await state.client.auth.signInWithOAuth({ provider: "google", options: { redirectTo, queryParams: { prompt: "select_account" } } }); if (error) setMessage(error.message); }
+async function signOut() { window.speechSynthesis?.cancel(); if (state.client) await state.client.auth.signOut({ scope: "local" }); state.session = null; cleanAuthUrl(); clearRemoteState(); state.message = "로그아웃했습니다."; state.view = "login"; render(); }
 async function awardTalent(payload) { const student = getStudent(payload.studentId); if (!student) { setMessage("아이를 먼저 등록하세요."); return false; } if (!isStaff()) { setMessage("선생님 권한이 필요합니다."); return false; } const amount = Number(payload.amount); const { error } = await state.client.from("talent_transactions").insert({ student_id: student.id, teacher_id: state.session.user.id, amount, reason: payload.reason, memo: payload.memo || null }); if (error) { setMessage(error.message); return false; } await loadRemoteData(); state.selectedStudentId = student.id; state.message = `${student.name}에게 ${amount} 달란트를 지급했습니다.`; return true; }
 async function addNote(payload) { if (!isStaff()) return setMessage("선생님 권한이 필요합니다."); const student = getStudent(payload.studentId); if (!student) return setMessage("아이를 먼저 등록하세요."); const { error } = await state.client.from("student_notes").insert({ student_id: student.id, teacher_id: state.session.user.id, note: payload.note }); if (error) return setMessage(error.message); await loadRemoteData(); state.selectedStudentId = student.id; state.message = "메모를 저장했습니다."; state.view = "student"; render(); }
 async function createStudent(payload) { if (!isAdmin()) return setMessage("관리자만 아이를 등록할 수 있습니다."); const { error } = await state.client.from("students").insert(payload); if (error) return setMessage(error.message); await loadRemoteData(); state.message = "아이를 등록했습니다."; render(); }
