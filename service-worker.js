@@ -1,4 +1,4 @@
-const CACHE_NAME = "talent-bible-school-v20260630-01";
+const CACHE_NAME = "talent-bible-school-v20260630-06";
 const APP_SHELL = [
   "./",
   "./index.html",

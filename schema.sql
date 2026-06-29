@@ -63,6 +63,30 @@ security definer
 set search_path = public
 as $$
 begin
+  if tg_op = 'UPDATE' then
+    if old.student_id = new.student_id then
+      update public.students
+      set total_talents = total_talents + new.amount - old.amount
+      where id = new.student_id;
+    else
+      update public.students
+      set total_talents = total_talents - old.amount
+      where id = old.student_id;
+
+      update public.students
+      set total_talents = total_talents + new.amount
+      where id = new.student_id;
+    end if;
+    return new;
+  end if;
+
+  if tg_op = 'DELETE' then
+    update public.students
+    set total_talents = greatest(total_talents - old.amount, 0)
+    where id = old.student_id;
+    return old;
+  end if;
+
   update public.students
   set total_talents = total_talents + new.amount
   where id = new.student_id;
@@ -74,7 +98,7 @@ revoke all on function public.update_student_total_talents() from public, anon, 
 
 drop trigger if exists talent_transactions_after_insert on public.talent_transactions;
 create trigger talent_transactions_after_insert
-after insert on public.talent_transactions
+after insert or update or delete on public.talent_transactions
 for each row execute function public.update_student_total_talents();
 
 create schema if not exists private;
@@ -141,8 +165,8 @@ begin
     p_student_id,
     (select auth.uid()),
     p_talents_awarded,
-    '성경학습',
-    p_lesson_title || ' 완료'
+    '영어학습',
+    p_lesson_title || ' 학습 완료'
   );
 end;
 $$;
@@ -193,6 +217,28 @@ create policy "teachers can insert transactions"
 on public.talent_transactions for insert
 to authenticated
 with check (teacher_id = (select auth.uid()));
+
+drop policy if exists "staff can update transactions" on public.talent_transactions;
+create policy "staff can update transactions"
+on public.talent_transactions for update
+to authenticated
+using (
+  private.current_user_role() = 'admin'
+  or (private.current_user_role() = 'teacher' and teacher_id = (select auth.uid()))
+)
+with check (
+  private.current_user_role() = 'admin'
+  or (private.current_user_role() = 'teacher' and teacher_id = (select auth.uid()))
+);
+
+drop policy if exists "staff can delete transactions" on public.talent_transactions;
+create policy "staff can delete transactions"
+on public.talent_transactions for delete
+to authenticated
+using (
+  private.current_user_role() = 'admin'
+  or (private.current_user_role() = 'teacher' and teacher_id = (select auth.uid()))
+);
 
 drop policy if exists "teachers can read notes" on public.student_notes;
 create policy "teachers can read notes"

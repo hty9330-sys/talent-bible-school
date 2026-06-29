@@ -47,8 +47,8 @@ begin
     p_student_id,
     (select auth.uid()),
     p_talents_awarded,
-    '성경학습',
-    p_lesson_title || ' 완료'
+    '영어학습',
+    p_lesson_title || ' 학습 완료'
   );
 end;
 $$;
