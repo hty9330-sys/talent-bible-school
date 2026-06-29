@@ -1,0 +1,75 @@
+﻿작업 날짜: 2026-06-29
+
+작업 위치:
+C:\Users\pc\Desktop\codex\2026-06-29-04\talent-bible-school-app
+
+배포 준비 내용:
+- index.html을 새 앱 파일 src/2026-06-29-app.js로 연결했다.
+- Supabase JS는 CDN에서 @supabase/supabase-js@2.45.4 고정 버전을 불러오게 했다.
+- GitHub Pages 정적 배포에 필요한 파일은 프로젝트 폴더 전체이다.
+
+Supabase 적용 순서:
+1. Supabase 프로젝트를 만든다.
+2. SQL Editor에서 supabase/schema.sql 전체를 실행한다.
+3. Authentication > Users에서 선생님 계정을 만든다.
+4. Auth user id와 같은 id로 public.users에 프로필을 추가한다.
+   예:
+   insert into public.users (id, name, email, role)
+   values ('AUTH_USER_ID', '정선생', 'teacher@example.com', 'admin');
+5. 앱 설정 화면에 Project URL과 anon public key를 저장한다.
+6. 로그인 후 학생 등록, 달란트 지급, 메모 작성, 성경 학습 완료를 테스트한다.
+
+GitHub Pages 업로드:
+- 이 PC에는 git 명령이 없어 직접 push하지 못했다.
+- GitHub 웹에서 저장소 파일을 업로드하거나 Git 설치 후 아래 흐름으로 반영한다.
+  git add .
+  git commit -m "Add Supabase auth and Bible learning tab"
+  git push
+
+로컬 실행:
+- 현재 확인 주소: http://localhost:4174
+- 실행 명령: $env:PORT='4174'; node server.js
+
+2026-06-29 Supabase 실제 연결 기록
+- 프로젝트: hty9330-sys's Project (vxqjhxrazedmaixpkgkp)
+- 적용 마이그레이션: add_auth_bible_learning_persistence
+- 보강 마이그레이션: tighten_talent_bible_rls_policies
+- 생성/확인 테이블: users, students, talent_transactions, student_notes, bible_learning_records
+- RLS 정책 확인 완료
+- 보안 어드바이저 확인: 새 앱 테이블 관련 과도한 students INSERT 정책 경고 해소
+- 남은 어드바이저 항목: 기존 profiles/todos/holdings/trade 계열 테이블 및 Auth leaked password protection 설정
+- public.users 프로필은 아직 비어 있음. 어떤 Auth 이메일을 admin/teacher로 등록할지 확인 필요.
+
+2026-06-29 관리자 계정 연결 완료
+- Auth 이메일: hty9330@gmail.com
+- public.users 등록 이름: 관리자
+- public.users 역할: admin
+- 테스트용 학생 데이터가 비어 있을 경우 기본 학생 3명을 seed 하도록 실행했다.
+- 앱 설정에 사용할 Project URL: https://vxqjhxrazedmaixpkgkp.supabase.co
+- anon public key는 Supabase Dashboard > Project Settings > API에서 확인 후 앱 설정 화면에 입력해야 한다.
+
+2026-06-29 전용 Supabase 프로젝트 생성 완료
+- 기존 hty9330-sys's Project는 슬기로운 일상생활 앱용으로 판단되어 새 프로젝트를 분리 생성했다.
+- 새 프로젝트 이름: talent-bible-school
+- 새 프로젝트 ID/ref: eesdzgehomzccrrykrqb
+- 새 Project URL: https://eesdzgehomzccrrykrqb.supabase.co
+- region: ap-northeast-2
+- 비용 확인: monthly 0
+- 적용 마이그레이션: initial_talent_bible_school_schema
+- 보안 어드바이저: lints 없음
+- 성능 어드바이저: unused index 안내만 있음. 새 빈 DB라 사용 이력이 없어서 발생하는 초기 안내.
+- 앱 기본 Project URL을 새 전용 프로젝트 URL로 반영했다.
+- 기존 슬기로운 일상생활 프로젝트에 추가했던 달란트 테이블은 삭제하지 않았다. 삭제하려면 별도 확인 후 진행해야 한다.
+
+2026-06-29 anon public key 기본값 반영
+- 새 전용 Supabase 프로젝트 eesdzgehomzccrrykrqb의 anon public key를 앱 기본값으로 반영했다.
+- 배포 후 사용자는 Supabase 설정 입력 없이 로그인 화면으로 이동할 수 있다.
+- 단, Authentication > Users에서 로그인 계정 생성은 별도로 필요하다.
+
+2026-06-29 전용 프로젝트 관리자 연결 완료
+- 프로젝트: talent-bible-school (eesdzgehomzccrrykrqb)
+- Auth 이메일: hty9330@gmail.com
+- public.users 이름: 관리자
+- public.users 역할: admin
+- 기본 학생 seed 확인: 3명
+- 이제 앱에서 hty9330@gmail.com 계정으로 로그인 가능하다.
