@@ -1,6 +1,6 @@
-﻿const CONFIG_KEY = "talent-bible-school:supabase-config";
+const CONFIG_KEY = "talent-bible-school:supabase-config";
 const DEFAULT_SUPABASE_URL = "https://eesdzgehomzccrrykrqb.supabase.co";
-const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlc2R6Z2Vob216Y2NycnlrcnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODc1ODYsImV4cCI6MjA5ODI2MzU4Nn0.DQvThttw0BniIa6zvzM7B2VuqCrPdmpmON4nX3JbOys";
+const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXJhYmFzZSIsInJlZiI6ImVlc2R6Z2Vob216Y2NycnlrcnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODc1ODYsImV4cCI6MjA5ODI2MzU4Nn0.DQvThttw0BniIa6zvzM7B2VuqCrPdmpmON4nX3JbOys";
 const reasons = ["출석", "성경암송", "성경학습", "예배태도", "친구도움", "과제완료", "찬양참여", "특별칭찬", "기타"];
 const quickAmounts = [1, 2, 5, 10];
 
@@ -308,10 +308,21 @@ function bibleView() {
 }
 
 function adminView() {
+  if (!state.session) return loginView();
+  if (state.profile?.role !== "admin") {
+    return `
+      <section class="stack">
+        <div class="form-panel">
+          <h2>관리자 전용</h2>
+          <p class="empty">관리 화면은 관리자 계정만 사용할 수 있습니다.</p>
+        </div>
+      </section>`;
+  }
   return `
     <section class="stack">
       <div class="section-heading"><h2>관리자 화면</h2><span>${state.profile?.role === "admin" ? "관리자" : "선생님"}</span></div>
       <form class="form-panel compact" id="student-form"><h3>아이 등록</h3><label>이름<input name="name" required /></label><label>학년<input name="grade" required /></label><label>반 또는 그룹<input name="groupName" required /></label><button class="primary-button" type="submit">등록</button></form>
+      <div class="feed"><h2>아이 관리</h2>${state.students.length === 0 ? `<p class="empty">등록된 아이가 없습니다.</p>` : ""}${state.students.map((student) => `<div class="student-row"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</small></span><button class="secondary-button" type="button" data-deactivate-student="${student.id}">삭제</button></div>`).join("")}</div>
       <div class="metric-grid"><div class="metric"><span>전체 아이</span><strong>${state.students.length}명</strong></div><div class="metric"><span>전체 지급 기록</span><strong>${state.transactions.length}건</strong></div><div class="metric"><span>성경 학습</span><strong>${state.bibleRecords.length}건</strong></div><div class="metric"><span>전체 메모</span><strong>${state.notes.length}건</strong></div></div>
       ${transactionFeed("전체 달란트 지급 내역", state.transactions)}
     </section>`;
@@ -389,6 +400,10 @@ async function addNote(payload) {
 }
 
 async function createStudent(payload) {
+  if (state.session && state.profile?.role !== "admin") {
+    setMessage("관리자만 아이를 등록할 수 있습니다.");
+    return;
+  }
   if (state.client && state.session) {
     const { error } = await state.client.from("students").insert(payload);
     if (error) { setMessage(error.message); return; }
@@ -397,6 +412,30 @@ async function createStudent(payload) {
     state.students.unshift({ id: crypto.randomUUID(), total_talents: 0, is_active: true, ...payload });
   }
   state.message = "아이를 등록했습니다.";
+  render();
+}
+
+async function deactivateStudent(studentId) {
+  const student = getStudent(studentId);
+  if (state.session && state.profile?.role !== "admin") {
+    setMessage("관리자만 아이를 삭제할 수 있습니다.");
+    return;
+  }
+  if (state.client && state.session) {
+    const { error } = await state.client
+      .from("students")
+      .update({ is_active: false })
+      .eq("id", studentId);
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+    await loadRemoteData();
+  } else {
+    state.students = state.students.filter((item) => item.id !== studentId);
+  }
+  state.message = `${student?.name || "아이"}를 목록에서 삭제했습니다.`;
+  state.view = "admin";
   render();
 }
 
@@ -478,6 +517,11 @@ function bindEvents(root) {
     const form = new FormData(studentForm);
     await createStudent({ name: form.get("name"), grade: form.get("grade"), group_name: form.get("groupName") });
   });
+  root.querySelectorAll("[data-deactivate-student]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      await deactivateStudent(button.dataset.deactivateStudent);
+    });
+  });
   const completeBible = root.querySelector("[data-action='complete-bible']");
   if (completeBible) completeBible.addEventListener("click", async () => {
     const select = root.querySelector("select[name='studentId']");
@@ -490,6 +534,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   await initSupabase();
   render();
 });
-
-
-
