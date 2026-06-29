@@ -4,9 +4,9 @@ const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3Mi
 const reasons = ["출석", "성경암송", "성경학습", "예배태도", "친구도움", "과제완료", "찬양참여", "특별칭찬", "기타"];
 const quickAmounts = [1, 2, 5, 10];
 const speechRates = [
-  { value: 0.65, label: "천천히" },
-  { value: 0.82, label: "보통" },
-  { value: 1, label: "빠르게" }
+  { value: 0.45, label: "천천히" },
+  { value: 0.6, label: "보통" },
+  { value: 0.75, label: "빠르게" }
 ];
 const roles = { admin: "관리자", teacher: "선생님", guardian: "보호자" };
 const bibleLesson = {
@@ -28,7 +28,7 @@ const bibleWordGlossary = {
   abide: "머물다, 거하다", above: "위에", according: "~에 따라", afraid: "두려워하는", almighty: "전능하신", angel: "천사", answer: "대답하다", ashamed: "부끄러워하는", bear: "견디다, 지다", believe: "믿다", blessed: "복 받은", blood: "피", bread: "빵, 양식", command: "명령하다", confess: "고백하다", covenant: "약속, 언약", creation: "창조", cross: "십자가", darkness: "어둠", declare: "선포하다", deliver: "구하다, 건지다", dwell: "거하다", earth: "땅", eternal: "영원한", everything: "모든 것", faith: "믿음", father: "아버지", forgive: "용서하다", fullness: "충만함", glory: "영광", grace: "은혜", heaven: "하늘", holy: "거룩한", kingdom: "나라, 왕국", light: "빛", mercy: "자비", mighty: "강한", neighbor: "이웃", peace: "평안", pleased: "기뻐하는", power: "능력", praise: "찬양하다", promise: "약속", reconcile: "화해시키다", rejoice: "기뻐하다", righteous: "의로운", savior: "구원자", shepherd: "목자", spirit: "영", strength: "힘", through: "~을 통하여", truth: "진리", understanding: "이해", wisdom: "지혜", witness: "증인, 증거하다", worship: "예배하다"
 };
 const state = {
-  view: "home", message: "", loading: false, selectedStudentId: "", amount: 1, reason: "출석", speechRate: 0.82,
+  view: "home", message: "", loading: false, selectedStudentId: "", amount: 1, reason: "출석", speechRate: 0.6,
   config: loadConfig(), client: null, session: null, profile: null,
   authSubscription: null, students: [], transactions: [], notes: [], bibleRecords: [], users: [], guardianLinks: [], bibleLesson
 };
@@ -221,6 +221,10 @@ async function updateWeeklyBibleLesson(payload) { if (!isAdmin()) return setMess
 async function completeBibleLesson(studentId) { if (!isStaff()) return setMessage("선생님 권한이 필요합니다."); const student = getStudent(studentId); if (!student) return setMessage("아이를 먼저 등록하세요."); const lesson = currentBibleLesson(); const { error } = await state.client.rpc("complete_bible_lesson", { p_student_id: student.id, p_lesson_title: lesson.title, p_verse_ref: lesson.verseRef, p_completed_items: lesson.words.length + lesson.lines.length, p_talents_awarded: 2 }); if (error) return setMessage(error.message); await loadRemoteData(); state.selectedStudentId = student.id; state.message = `${student.name}의 성경 학습을 완료하고 2 달란트를 기록했습니다.`; state.view = "student"; render(); }
 function speak(text) { window.speechSynthesis?.cancel(); if (!window.speechSynthesis) return setMessage("이 브라우저에서는 음성 재생을 지원하지 않습니다."); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = "en-US"; utterance.rate = state.speechRate; window.speechSynthesis.speak(utterance); }
 function render() { const root = document.getElementById("root"); const views = { home: homeView, students: studentsView, student: studentView, award: awardView, note: noteView, bible: bibleView, admin: adminView, settings: settingsView, login: loginView }; if (isConfigured() && !state.session && state.view !== "settings") state.view = "login"; if (!isStaff() && ["award", "note"].includes(state.view)) state.view = "home"; if (!isAdmin() && state.view === "admin") state.view = "home"; root.innerHTML = layout((views[state.view] || homeView)()); bindEvents(root); }
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("./service-worker.js?v=20260630-01").catch(() => {});
+}
 function bindEvents(root) {
   root.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
   root.querySelectorAll("[data-student]").forEach((button) => button.addEventListener("click", () => selectStudent(button.dataset.student)));
@@ -240,4 +244,4 @@ function bindEvents(root) {
   root.querySelectorAll("[data-deactivate-student]").forEach((button) => button.addEventListener("click", async () => deactivateStudent(button.dataset.deactivateStudent)));
   root.querySelector("[data-action='complete-bible']")?.addEventListener("click", async () => { const select = root.querySelector("select[name='studentId']"); await completeBibleLesson(select?.value || state.selectedStudentId); });
 }
-document.addEventListener("DOMContentLoaded", async () => { render(); await initSupabase(); render(); });
+document.addEventListener("DOMContentLoaded", async () => { registerServiceWorker(); render(); await initSupabase(); render(); });

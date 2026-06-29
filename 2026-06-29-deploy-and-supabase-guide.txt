@@ -96,3 +96,15 @@ GitHub Pages 업로드:
 - Google OAuth 반환 code를 명시적으로 Supabase 세션으로 교환하도록 보강했다.
 - Supabase 인증 오류가 URL에 담겨 돌아오면 화면 메시지로 표시한다.
 - 최신 검증 주소: https://hty9330-sys.github.io/talent-bible-school/?v=20260629-12
+
+2026-06-29 홈 화면 앱 아이콘 추가
+- 들사람교회 아이콘을 assets/icons/deulsaram-app-icon-192.png, assets/icons/deulsaram-app-icon-512.png로 추가했다.
+- manifest.json을 추가하고 index.html에서 manifest, favicon, apple-touch-icon을 연결했다.
+- 휴대폰 브라우저에서 홈 화면에 추가할 때 들사람교회 아이콘이 표시되도록 했다.
+- 최신 검증 주소: https://hty9330-sys.github.io/talent-bible-school/?v=20260629-13
+
+2026-06-30 홈 화면 아이콘 인식 및 영어 속도 보강
+- service-worker.js를 추가해 브라우저가 웹앱을 홈 화면 추가 대상으로 더 안정적으로 인식하도록 했다.
+- manifest 아이콘 purpose를 any로 조정해 아이콘이 잘리는 문제를 줄였다.
+- 원어민 영어 읽기 속도를 전체적으로 낮췄다: 천천히 0.45, 보통 0.6, 빠르게 0.75.
+- 최신 검증 주소: https://hty9330-sys.github.io/talent-bible-school/?v=20260630-01

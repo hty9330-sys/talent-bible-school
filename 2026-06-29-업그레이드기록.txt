@@ -55,6 +55,13 @@
 - 브라우저에 이전 Supabase 프로젝트 설정이 남아 있으면 기본 전용 프로젝트로 자동 복구하도록 수정함
 - Google OAuth 반환 code를 명시적으로 세션으로 교환하고 인증 오류 메시지를 화면에 표시하도록 보강함
 - index.html 자산 캐시 버전을 v=20260629-12로 갱신
+- 들사람교회 앱 아이콘을 assets/icons에 192px, 512px PNG로 추가함
+- 홈 화면 추가용 manifest.json을 추가하고 index.html에 manifest, favicon, apple-touch-icon을 연결함
+- index.html 자산 캐시 버전을 v=20260629-13으로 갱신
+- 앱 아이콘이 홈 화면 추가에서 더 안정적으로 인식되도록 service-worker.js를 추가하고 등록함
+- manifest 아이콘 purpose를 any로 조정해 아이콘이 마스크 처리로 잘릴 위험을 줄임
+- 원어민 영어 읽기 속도를 천천히 0.45, 보통 0.6, 빠르게 0.75로 낮추고 기본값을 보통 0.6으로 변경함
+- index.html 자산 캐시 버전을 v=20260630-01로 갱신
 
 알려진 문제와 추가 개선 후보:
 - Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함

@@ -1,0 +1,25 @@
+{
+  "name": "달란트 성경학교",
+  "short_name": "달란트",
+  "description": "달란트 지급과 성경학교 성장 기록 웹앱",
+  "id": "/talent-bible-school/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#d3d0c7",
+  "theme_color": "#2f6f63",
+  "icons": [
+    {
+      "src": "./assets/icons/deulsaram-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/deulsaram-app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
