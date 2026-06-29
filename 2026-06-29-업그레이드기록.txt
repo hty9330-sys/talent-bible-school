@@ -52,6 +52,9 @@
 - Supabase Auth 상태 변경 처리에서 세션 저장과 데이터 불러오기를 분리해 로그인/로그아웃 화면 전환을 안정화함
 - 로그아웃 시 브라우저 음성 재생을 중지하고 인증 URL 조각을 정리하도록 수정함
 - index.html 자산 캐시 버전을 v=20260629-11로 갱신
+- 브라우저에 이전 Supabase 프로젝트 설정이 남아 있으면 기본 전용 프로젝트로 자동 복구하도록 수정함
+- Google OAuth 반환 code를 명시적으로 세션으로 교환하고 인증 오류 메시지를 화면에 표시하도록 보강함
+- index.html 자산 캐시 버전을 v=20260629-12로 갱신
 
 알려진 문제와 추가 개선 후보:
 - Supabase Auth의 Leaked Password Protection을 Dashboard에서 켜는 것을 권장함

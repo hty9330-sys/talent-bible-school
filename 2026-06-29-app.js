@@ -32,7 +32,18 @@ const state = {
   config: loadConfig(), client: null, session: null, profile: null,
   authSubscription: null, students: [], transactions: [], notes: [], bibleRecords: [], users: [], guardianLinks: [], bibleLesson
 };
-function loadConfig() { try { return JSON.parse(localStorage.getItem(CONFIG_KEY) || "null"); } catch { return null; } }
+function loadConfig() {
+  try {
+    const config = JSON.parse(localStorage.getItem(CONFIG_KEY) || "null");
+    if (config?.url && config.url !== DEFAULT_SUPABASE_URL) {
+      localStorage.removeItem(CONFIG_KEY);
+      return null;
+    }
+    return config;
+  } catch {
+    return null;
+  }
+}
 function saveConfig(config) { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); state.config = config; }
 function isConfigured() { return Boolean((state.config?.url || DEFAULT_SUPABASE_URL) && (state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY) && window.supabase?.createClient); }
 function escapeHtml(value) { return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
@@ -46,6 +57,10 @@ function todayTotal() { const today = new Date().toDateString(); return state.tr
 function setMessage(message) { state.message = message; render(); }
 function setView(view) { state.view = view; state.message = ""; render(); }
 function selectStudent(studentId, nextView = "student") { state.selectedStudentId = studentId; setView(nextView); }
+function authRedirectMessage() {
+  const params = new URLSearchParams(`${window.location.search.replace(/^\?/, "")}&${window.location.hash.replace(/^#/, "")}`);
+  return params.get("error_description") || params.get("error") || "";
+}
 async function initSupabase() {
   if (!isConfigured()) return;
   state.authSubscription?.unsubscribe?.();
@@ -54,6 +69,14 @@ async function initSupabase() {
   });
   const { data } = await state.client.auth.getSession();
   state.session = data.session;
+  const authCode = new URLSearchParams(window.location.search).get("code");
+  if (!state.session && authCode) {
+    const result = await state.client.auth.exchangeCodeForSession(authCode);
+    if (result.data?.session) state.session = result.data.session;
+    if (result.error) state.message = result.error.message;
+  }
+  const redirectError = authRedirectMessage();
+  if (redirectError) state.message = redirectError;
   if (state.session) await loadRemoteData();
   const { data: listener } = state.client.auth.onAuthStateChange((_event, session) => {
     state.session = session;
