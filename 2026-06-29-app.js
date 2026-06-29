@@ -1,9 +1,9 @@
 const CONFIG_KEY = "talent-bible-school:supabase-config";
 const DEFAULT_SUPABASE_URL = "https://eesdzgehomzccrrykrqb.supabase.co";
 const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlc2R6Z2Vob216Y2NycnlrcnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODc1ODYsImV4cCI6MjA5ODI2MzU4Nn0.DQvThttw0BniIa6zvzM7B2VuqCrPdmpmON4nX3JbOys";
-
 const reasons = ["출석", "성경암송", "성경학습", "예배태도", "친구도움", "과제완료", "찬양참여", "특별칭찬", "기타"];
 const quickAmounts = [1, 2, 5, 10];
+const roles = { admin: "관리자", teacher: "선생님", guardian: "보호자" };
 const bibleLesson = {
   verseRef: "Colossians 1:19-20 (CSB)",
   title: "Bible English Adventure",
@@ -17,71 +17,25 @@ const bibleLesson = {
   ],
   lines: ["For God", "was pleased", "to have all his fullness", "dwell in him,", "and through him", "to reconcile everything,", "by making peace", "through his blood,", "shed on the cross."]
 };
-
 const state = {
-  view: "home",
-  message: "",
-  loading: false,
-  selectedStudentId: "",
-  amount: 1,
-  reason: "출석",
-  config: loadConfig(),
-  client: null,
-  session: null,
-  profile: null,
-  students: [],
-  transactions: [],
-  notes: [],
-  bibleRecords: []
+  view: "home", message: "", loading: false, selectedStudentId: "", amount: 1, reason: "출석",
+  config: loadConfig(), client: null, session: null, profile: null,
+  students: [], transactions: [], notes: [], bibleRecords: [], users: [], guardianLinks: []
 };
-
-function loadConfig() {
-  try { return JSON.parse(localStorage.getItem(CONFIG_KEY) || "null"); } catch { return null; }
-}
-function saveConfig(config) {
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-  state.config = config;
-}
-function isConfigured() {
-  return Boolean((state.config?.url || DEFAULT_SUPABASE_URL) && (state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY) && window.supabase?.createClient);
-}
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-function formatDate(value) {
-  return new Intl.DateTimeFormat("ko-KR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
-}
-function getStudent(id) {
-  return state.students.find((student) => student.id === id) || state.students[0] || null;
-}
-function currentTeacherName() {
-  return state.profile?.name || state.session?.user?.email || "선생님";
-}
-function todayTotal() {
-  const today = new Date().toDateString();
-  return state.transactions
-    .filter((item) => new Date(item.created_at).toDateString() === today)
-    .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-}
-function setMessage(message) {
-  state.message = message;
-  render();
-}
-function setView(view) {
-  state.view = view;
-  state.message = "";
-  render();
-}
-function selectStudent(studentId, nextView = "student") {
-  state.selectedStudentId = studentId;
-  setView(nextView);
-}
-
+function loadConfig() { try { return JSON.parse(localStorage.getItem(CONFIG_KEY) || "null"); } catch { return null; } }
+function saveConfig(config) { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); state.config = config; }
+function isConfigured() { return Boolean((state.config?.url || DEFAULT_SUPABASE_URL) && (state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY) && window.supabase?.createClient); }
+function escapeHtml(value) { return String(value || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+function formatDate(value) { return new Intl.DateTimeFormat("ko-KR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value)); }
+function roleLabel(role) { return roles[role] || "보호자"; }
+function isAdmin() { return state.profile?.role === "admin"; }
+function isStaff() { return ["admin", "teacher"].includes(state.profile?.role); }
+function getStudent(id) { return state.students.find((student) => student.id === id) || state.students[0] || null; }
+function currentTeacherName() { return state.profile?.name || state.session?.user?.email || "사용자"; }
+function todayTotal() { const today = new Date().toDateString(); return state.transactions.filter((item) => new Date(item.created_at).toDateString() === today).reduce((sum, item) => sum + Number(item.amount || 0), 0); }
+function setMessage(message) { state.message = message; render(); }
+function setView(view) { state.view = view; state.message = ""; render(); }
+function selectStudent(studentId, nextView = "student") { state.selectedStudentId = studentId; setView(nextView); }
 async function initSupabase() {
   if (!isConfigured()) return;
   state.client = window.supabase.createClient(state.config?.url || DEFAULT_SUPABASE_URL, state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY);
@@ -90,308 +44,104 @@ async function initSupabase() {
   if (state.session) await loadRemoteData();
   state.client.auth.onAuthStateChange(async (_event, session) => {
     state.session = session;
-    if (session) {
-      await loadRemoteData();
-      state.view = "home";
-    } else {
-      state.profile = null;
-      state.view = "login";
-    }
+    if (session) { await loadRemoteData(); state.view = "home"; } else { clearRemoteState(); state.view = "login"; }
     render();
   });
 }
-
+function clearRemoteState() { state.profile = null; state.students = []; state.transactions = []; state.notes = []; state.bibleRecords = []; state.users = []; state.guardianLinks = []; }
 async function loadRemoteData() {
   if (!state.client || !state.session) return;
-  state.loading = true;
-  render();
+  state.loading = true; render();
   const userId = state.session.user.id;
-  const [profileResult, studentResult, transactionResult, noteResult, bibleResult] = await Promise.all([
-    state.client.from("users").select("id,name,email,role").eq("id", userId).maybeSingle(),
+  const profileResult = await state.client.from("users").select("id,name,email,role").eq("id", userId).maybeSingle();
+  if (profileResult.data) state.profile = profileResult.data;
+  const [studentResult, transactionResult, noteResult, bibleResult] = await Promise.all([
     state.client.from("students").select("*").eq("is_active", true).order("name"),
     state.client.from("talent_transactions").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80),
-    state.client.from("student_notes").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80),
+    isStaff() ? state.client.from("student_notes").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80) : Promise.resolve({ data: [] }),
     state.client.from("bible_learning_records").select("*, students(name), users(name)").order("created_at", { ascending: false }).limit(80)
   ]);
-  if (profileResult.data) state.profile = profileResult.data;
-  if (studentResult.data) state.students = studentResult.data;
-  if (transactionResult.data) state.transactions = transactionResult.data.map(mapTransaction);
-  if (noteResult.data) state.notes = noteResult.data.map(mapNote);
-  if (bibleResult.data) state.bibleRecords = bibleResult.data.map(mapBibleRecord);
+  state.students = studentResult.data || [];
+  state.transactions = (transactionResult.data || []).map(mapTransaction);
+  state.notes = (noteResult.data || []).map(mapNote);
+  state.bibleRecords = (bibleResult.data || []).map(mapBibleRecord);
+  if (isAdmin()) {
+    const [usersResult, linksResult] = await Promise.all([
+      state.client.from("users").select("id,name,email,role").order("name"),
+      state.client.from("student_guardians").select("*").order("created_at", { ascending: false })
+    ]);
+    state.users = usersResult.data || [];
+    state.guardianLinks = linksResult.data || [];
+  } else {
+    state.users = [];
+    state.guardianLinks = [];
+  }
   state.selectedStudentId = state.students[0]?.id || "";
   state.loading = false;
 }
-function mapTransaction(item) {
-  return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" };
-}
-function mapNote(item) {
-  return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" };
-}
-function mapBibleRecord(item) {
-  return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" };
-}
-
+function mapTransaction(item) { return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" }; }
+function mapNote(item) { return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" }; }
+function mapBibleRecord(item) { return { ...item, student_name: item.students?.name || "아이", teacher_name: item.users?.name || "선생님" }; }
 function layout(content) {
-  const modeText = isConfigured() ? state.session ? `${escapeHtml(currentTeacherName())} 로그인 중` : "Supabase 연결됨" : "설정 필요";
-  return `
-    <div class="app-shell">
-      <header class="topbar">
-        <div><p class="eyebrow">달란트 성경학교</p><h1>아이들의 말씀과 성장을 함께 기록해요</h1></div>
-        <div class="topbar-actions">
-          ${state.session ? `<button class="ghost-button" type="button" data-action="logout">로그아웃</button>` : `<button class="ghost-button" type="button" data-view="login">로그인</button>`}
-          <button class="ghost-button" type="button" data-view="settings">설정</button>
-        </div>
-      </header>
-      <div class="notice">${modeText}${state.loading ? " · 불러오는 중" : ""}</div>
-      ${state.message ? `<div class="toast">${escapeHtml(state.message)}</div>` : ""}
-      <main>${content}</main>
-      <nav class="bottom-nav" aria-label="주요 메뉴">
-        ${navButton("home", "홈")}${navButton("students", "아이")}${navButton("award", "지급")}${navButton("bible", "성경")}${navButton("admin", "관리")}
-      </nav>
-    </div>`;
+  const modeText = isConfigured() ? state.session ? `${escapeHtml(currentTeacherName())} · ${roleLabel(state.profile?.role)}` : "Supabase 연결됨" : "설정 필요";
+  return `<div class="app-shell"><header class="topbar"><div><p class="eyebrow">달란트 성경학교</p><h1>아이들의 말씀과 성장을 함께 기록해요</h1></div><div class="topbar-actions">${state.session ? `<button class="ghost-button" type="button" data-action="logout">로그아웃</button>` : `<button class="ghost-button" type="button" data-view="login">로그인</button>`}<button class="ghost-button" type="button" data-view="settings">설정</button></div></header><div class="notice">${modeText}${state.loading ? " · 불러오는 중" : ""}</div>${state.message ? `<div class="toast">${escapeHtml(state.message)}</div>` : ""}<main>${content}</main><nav class="bottom-nav" aria-label="주요 메뉴">${navButton("home", "홈")}${navButton("students", "아이")}${isStaff() ? navButton("award", "지급") : ""}${navButton("bible", "성경")}${isAdmin() ? navButton("admin", "관리") : ""}</nav></div>`;
 }
-function navButton(view, label) {
-  return `<button type="button" class="${state.view === view ? "active" : ""}" data-view="${view}">${label}</button>`;
-}
+function navButton(view, label) { return `<button type="button" class="${state.view === view ? "active" : ""}" data-view="${view}">${label}</button>`; }
 function homeView() {
-  return `
-    <section class="stack">
-      <div class="hero-panel"><span>오늘 지급한 달란트</span><strong>${todayTotal()}</strong><p>칭찬, 암송, 성경 영어 학습을 한곳에 기록합니다.</p></div>
-      <div class="quick-grid"><button type="button" data-view="students">아이 목록</button><button type="button" data-view="award">달란트 지급</button><button type="button" data-view="bible">성경 학습</button><button type="button" data-view="note">메모 작성</button></div>
-      ${transactionFeed("최근 달란트 지급", state.transactions.slice(0, 4))}
-      ${bibleFeed("최근 성경 학습", state.bibleRecords.slice(0, 4))}
-      ${noteFeed("최근 작성된 메모", state.notes.slice(0, 4))}
-    </section>`;
+  return `<section class="stack"><div class="hero-panel"><span>오늘 지급한 달란트</span><strong>${todayTotal()}</strong><p>${isStaff() ? "칭찬, 암송, 성경 영어 학습을 한곳에 기록합니다." : "연결된 아이의 달란트와 성경 학습 기록을 확인합니다."}</p></div><div class="quick-grid"><button type="button" data-view="students">아이 목록</button>${isStaff() ? `<button type="button" data-view="award">달란트 지급</button>` : ""}<button type="button" data-view="bible">성경 학습</button>${isStaff() ? `<button type="button" data-view="note">메모 작성</button>` : ""}</div>${transactionFeed("최근 달란트 지급", state.transactions.slice(0, 4))}${bibleFeed("최근 성경 학습", state.bibleRecords.slice(0, 4))}${isStaff() ? noteFeed("최근 작성된 메모", state.notes.slice(0, 4)) : ""}</section>`;
 }
 function loginView() {
   if (!isConfigured()) return settingsView();
-  return `
-    <section class="login-screen inline-login">
-      <form class="login-card" id="login-form">
-        <p class="eyebrow">선생님 로그인</p><h1>수업 기록을 저장합니다</h1>
-        <label>이메일<input name="email" type="email" required autocomplete="email" /></label>
-        <label>비밀번호<input name="password" type="password" required autocomplete="current-password" /></label>
-        <button class="primary-button" type="submit">로그인</button>
-      </form>
-    </section>`;
+  return `<section class="login-screen inline-login"><form class="login-card" id="login-form"><p class="eyebrow">로그인</p><h1>선생님과 보호자가 함께 사용합니다</h1><button class="google-button" type="button" data-action="google-login">Google로 로그인</button><div class="divider">또는 이메일 로그인</div><label>이메일<input name="email" type="email" required autocomplete="email" /></label><label>비밀번호<input name="password" type="password" required autocomplete="current-password" /></label><button class="primary-button" type="submit">이메일로 로그인</button><p class="empty">처음 Google로 로그인하면 보호자로 등록됩니다. 선생님 권한은 관리자가 변경합니다.</p></form></section>`;
 }
-function studentsView() {
-  return `
-    <section class="stack">
-      <div class="section-heading"><h2>아이 목록</h2><span>${state.students.length}명</span></div>
-      <div class="student-list">${state.students.length === 0 ? `<p class="empty">등록된 아이가 없습니다.</p>` : state.students.map((student) => `
-        <button class="student-row" type="button" data-student="${student.id}"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</small></span><b>${student.total_talents} 달란트</b></button>`).join("")}</div>
-    </section>`;
-}
+function studentsView() { return `<section class="stack"><div class="section-heading"><h2>${isStaff() ? "아이 목록" : "내 아이"}</h2><span>${state.students.length}명</span></div><div class="student-list">${state.students.length === 0 ? `<p class="empty">${isStaff() ? "등록된 아이가 없습니다." : "아직 연결된 아이가 없습니다. 관리자에게 보호자 연결을 요청하세요."}</p>` : state.students.map((student) => `<button class="student-row" type="button" data-student="${student.id}"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</small></span><b>${student.total_talents} 달란트</b></button>`).join("")}</div></section>`; }
 function studentView() {
-  const student = getStudent(state.selectedStudentId);
-  if (!student) return emptyStudentsView();
-  return `
-    <section class="stack">
-      <div class="profile-panel"><p>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</p><h2>${escapeHtml(student.name)}</h2><strong>${student.total_talents} 달란트</strong></div>
-      <div class="action-row"><button class="primary-button" type="button" data-view="award">달란트 지급</button><button class="secondary-button" type="button" data-view="bible">성경 학습</button></div>
-      ${transactionFeed("전체 달란트 지급 기록", state.transactions.filter((item) => item.student_id === student.id))}
-      ${bibleFeed("성경 학습 기록", state.bibleRecords.filter((item) => item.student_id === student.id))}
-      ${noteFeed("선생님 메모 기록", state.notes.filter((item) => item.student_id === student.id))}
-    </section>`;
+  const student = getStudent(state.selectedStudentId); if (!student) return emptyStudentsView();
+  return `<section class="stack"><div class="profile-panel"><p>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</p><h2>${escapeHtml(student.name)}</h2><strong>${student.total_talents} 달란트</strong></div>${isStaff() ? `<div class="action-row"><button class="primary-button" type="button" data-view="award">달란트 지급</button><button class="secondary-button" type="button" data-view="bible">성경 학습</button></div>` : ""}${transactionFeed("전체 달란트 지급 기록", state.transactions.filter((item) => item.student_id === student.id))}${bibleFeed("성경 학습 기록", state.bibleRecords.filter((item) => item.student_id === student.id))}${isStaff() ? noteFeed("선생님 메모 기록", state.notes.filter((item) => item.student_id === student.id)) : ""}</section>`;
 }
-function emptyStudentsView() {
-  return `<section class="stack"><div class="form-panel"><h2>등록된 아이가 없습니다</h2><p class="empty">관리자 계정으로 관리 탭에서 아이를 먼저 등록하세요.</p></div></section>`;
-}
-function awardView() {
-  const student = getStudent(state.selectedStudentId);
-  if (!student) return emptyStudentsView();
-  return `
-    <form class="form-panel" id="award-form">
-      <h2>달란트 지급</h2>${studentSelect(student.id)}
-      <div class="amount-grid">${quickAmounts.map((amount) => `<button class="${state.amount === amount ? "selected" : ""}" type="button" data-amount="${amount}">${amount} 달란트</button>`).join("")}</div>
-      <label>지급 사유<select name="reason">${reasons.map((reason) => `<option ${reason === state.reason ? "selected" : ""}>${reason}</option>`).join("")}</select></label>
-      <label>메모<textarea name="memo" placeholder="칭찬 내용이나 상황을 적어주세요."></textarea></label>
-      <button class="primary-button" type="submit">지급 저장</button>
-    </form>`;
-}
-function noteView() {
-  const student = getStudent(state.selectedStudentId);
-  if (!student) return emptyStudentsView();
-  return `<form class="form-panel" id="note-form"><h2>메모 작성</h2>${studentSelect(student.id)}<label>관찰 메모<textarea name="note" required placeholder="예배 태도, 친구 관계, 암송, 보호자 전달 사항 등을 기록해주세요."></textarea></label><button class="primary-button" type="submit">메모 저장</button></form>`;
-}
-function bibleView() {
-  const student = getStudent(state.selectedStudentId);
-  return `
-    <section class="stack bible-view">
-      <div class="section-heading"><h2>성경 영어 학습</h2><span>${escapeHtml(bibleLesson.verseRef)}</span></div>
-      <div class="form-panel bible-lesson-panel">
-        ${student ? studentSelect(student.id) : `<p class="empty">아이를 먼저 등록하세요.</p>`}
-        <p class="eyebrow">${escapeHtml(bibleLesson.title)}</p><h2>오늘의 말씀과 단어</h2><p class="empty">단어를 듣고, 말씀을 한 줄씩 따라 읽은 뒤 완료하면 달란트가 기록됩니다.</p>
-        <div class="word-grid">${bibleLesson.words.map((item) => `<div class="word-card"><div><strong>${escapeHtml(item.word)}</strong><small>${escapeHtml(item.sound)}</small></div><p>${escapeHtml(item.meaning)}</p><button class="audio-button" type="button" data-speak="${escapeHtml(item.word + ". " + item.example)}">듣기</button></div>`).join("")}</div>
-      </div>
-      <div class="feed verse-panel"><h2>말씀 한 줄씩 듣기</h2>${bibleLesson.lines.map((line, index) => `<div class="verse-line"><span>${index + 1}. ${escapeHtml(line)}</span><button class="audio-button" type="button" data-speak="${escapeHtml(line)}">듣기</button></div>`).join("")}<div class="action-row"><button class="secondary-button" type="button" data-speak="${escapeHtml(bibleLesson.lines.join(" "))}">전체 말씀 듣기</button><button class="primary-button" type="button" data-action="complete-bible">학습 완료 +2</button></div></div>
-      ${bibleFeed("최근 성경 학습", state.bibleRecords.slice(0, 6))}
-    </section>`;
-}
+function emptyStudentsView() { return `<section class="stack"><div class="form-panel"><h2>등록된 아이가 없습니다</h2><p class="empty">${isStaff() ? "관리 탭에서 아이를 먼저 등록하세요." : "보호자 계정은 관리자가 아이와 연결해야 기록을 볼 수 있습니다."}</p></div></section>`; }
+function awardView() { if (!isStaff()) return permissionView(); const student = getStudent(state.selectedStudentId); if (!student) return emptyStudentsView(); return `<form class="form-panel" id="award-form"><h2>달란트 지급</h2>${studentSelect(student.id)}<div class="amount-grid">${quickAmounts.map((amount) => `<button class="${state.amount === amount ? "selected" : ""}" type="button" data-amount="${amount}">${amount} 달란트</button>`).join("")}</div><label>지급 사유<select name="reason">${reasons.map((reason) => `<option ${reason === state.reason ? "selected" : ""}>${reason}</option>`).join("")}</select></label><label>메모<textarea name="memo" placeholder="칭찬 내용이나 상황을 적어주세요."></textarea></label><button class="primary-button" type="submit">지급 저장</button></form>`; }
+function noteView() { if (!isStaff()) return permissionView(); const student = getStudent(state.selectedStudentId); if (!student) return emptyStudentsView(); return `<form class="form-panel" id="note-form"><h2>메모 작성</h2>${studentSelect(student.id)}<label>관찰 메모<textarea name="note" required placeholder="예배 태도, 친구 관계, 암송, 보호자 전달 사항 등을 기록해주세요."></textarea></label><button class="primary-button" type="submit">메모 저장</button></form>`; }
+function bibleView() { const student = getStudent(state.selectedStudentId); return `<section class="stack bible-view"><div class="section-heading"><h2>성경 영어 학습</h2><span>${escapeHtml(bibleLesson.verseRef)}</span></div><div class="form-panel bible-lesson-panel">${student ? studentSelect(student.id) : `<p class="empty">아이를 먼저 등록하거나 연결하세요.</p>`}<p class="eyebrow">${escapeHtml(bibleLesson.title)}</p><h2>오늘의 말씀과 단어</h2><p class="empty">단어와 말씀을 원어민 음성으로 듣습니다.${isStaff() ? " 완료하면 달란트가 기록됩니다." : ""}</p><div class="word-grid">${bibleLesson.words.map((item) => `<div class="word-card"><div><strong>${escapeHtml(item.word)}</strong><small>${escapeHtml(item.sound)}</small></div><p>${escapeHtml(item.meaning)}</p><button class="audio-button" type="button" data-speak="${escapeHtml(item.word + ". " + item.example)}">듣기</button></div>`).join("")}</div></div><div class="feed verse-panel"><h2>말씀 한 줄씩 듣기</h2>${bibleLesson.lines.map((line, index) => `<div class="verse-line"><span>${index + 1}. ${escapeHtml(line)}</span><button class="audio-button" type="button" data-speak="${escapeHtml(line)}">듣기</button></div>`).join("")}<div class="action-row"><button class="secondary-button" type="button" data-speak="${escapeHtml(bibleLesson.lines.join(" "))}">전체 말씀 듣기</button>${isStaff() ? `<button class="primary-button" type="button" data-action="complete-bible">학습 완료 +2</button>` : ""}</div></div>${bibleFeed("최근 성경 학습", state.bibleRecords.slice(0, 6))}</section>`; }
 function adminView() {
-  if (!state.session) return loginView();
-  if (state.profile?.role !== "admin") return `<section class="stack"><div class="form-panel"><h2>관리자 전용</h2><p class="empty">관리 화면은 관리자 계정만 사용할 수 있습니다.</p></div></section>`;
-  return `
-    <section class="stack">
-      <div class="section-heading"><h2>관리자 화면</h2><span>관리자</span></div>
-      <form class="form-panel compact" id="student-form"><h3>아이 등록</h3><label>이름<input name="name" required /></label><label>학년<input name="grade" required /></label><label>반 또는 그룹<input name="groupName" required /></label><button class="primary-button" type="submit">등록</button></form>
-      <div class="feed"><h2>아이 관리</h2>${state.students.length === 0 ? `<p class="empty">등록된 아이가 없습니다.</p>` : state.students.map((student) => `<div class="student-row"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</small></span><button class="secondary-button" type="button" data-deactivate-student="${student.id}">삭제</button></div>`).join("")}</div>
-      <div class="metric-grid"><div class="metric"><span>전체 아이</span><strong>${state.students.length}명</strong></div><div class="metric"><span>전체 지급 기록</span><strong>${state.transactions.length}건</strong></div><div class="metric"><span>성경 학습</span><strong>${state.bibleRecords.length}건</strong></div><div class="metric"><span>전체 메모</span><strong>${state.notes.length}건</strong></div></div>
-      ${transactionFeed("전체 달란트 지급 내역", state.transactions)}
-    </section>`;
+  if (!state.session) return loginView(); if (!isAdmin()) return permissionView();
+  const guardians = state.users.filter((user) => user.role === "guardian");
+  return `<section class="stack"><div class="section-heading"><h2>관리자 화면</h2><span>권한 및 보호자 연결</span></div><form class="form-panel compact" id="student-form"><h3>아이 등록</h3><label>이름<input name="name" required /></label><label>학년<input name="grade" required /></label><label>반 또는 그룹<input name="groupName" required /></label><button class="primary-button" type="submit">등록</button></form><div class="feed"><h2>사용자 권한</h2>${state.users.map((user) => `<div class="user-row"><span><strong>${escapeHtml(user.name)}</strong><small>${escapeHtml(user.email)} · ${roleLabel(user.role)}</small></span><select data-user-role="${user.id}">${Object.entries(roles).map(([value, label]) => `<option value="${value}" ${user.role === value ? "selected" : ""}>${label}</option>`).join("")}</select></div>`).join("")}</div><form class="form-panel compact" id="guardian-link-form"><h3>보호자와 아이 연결</h3><label>아이<select name="studentId">${state.students.map((student) => `<option value="${student.id}">${escapeHtml(student.name)} · ${escapeHtml(student.group_name)}</option>`).join("")}</select></label><label>보호자<select name="guardianId">${guardians.map((user) => `<option value="${user.id}">${escapeHtml(user.name)} · ${escapeHtml(user.email)}</option>`).join("")}</select></label><label>관계<input name="relationship" value="보호자" /></label><button class="primary-button" type="submit">연결 저장</button></form><div class="feed"><h2>아이 관리</h2>${state.students.length === 0 ? `<p class="empty">등록된 아이가 없습니다.</p>` : state.students.map((student) => `<div class="student-row"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}${guardianText(student.id)}</small></span><button class="secondary-button" type="button" data-deactivate-student="${student.id}">삭제</button></div>`).join("")}</div><div class="metric-grid"><div class="metric"><span>전체 아이</span><strong>${state.students.length}명</strong></div><div class="metric"><span>사용자</span><strong>${state.users.length}명</strong></div><div class="metric"><span>보호자 연결</span><strong>${state.guardianLinks.length}건</strong></div><div class="metric"><span>성경 학습</span><strong>${state.bibleRecords.length}건</strong></div></div></section>`;
 }
-function settingsView() {
-  return `<section class="stack"><form class="form-panel" id="config-form"><h2>Supabase 연결 설정</h2><p class="empty">Project URL과 anon public key만 브라우저에 저장합니다. service_role key는 절대 입력하지 마세요.</p><label>Project URL<input name="url" required placeholder="https://xxxx.supabase.co" value="${escapeHtml(state.config?.url || DEFAULT_SUPABASE_URL)}" /></label><label>Anon public key<input name="anonKey" required placeholder="eyJ..." value="${escapeHtml(state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY)}" /></label><button class="primary-button" type="submit">설정 저장</button></form></section>`;
-}
-function studentSelect(selectedId) {
-  return `<label>아이 선택<select name="studentId">${state.students.map((item) => `<option value="${item.id}" ${item.id === selectedId ? "selected" : ""}>${escapeHtml(item.name)} · ${escapeHtml(item.group_name)}</option>`).join("")}</select></label>`;
-}
-function transactionFeed(title, items) {
-  return `<section class="feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">기록이 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b> · ${escapeHtml(item.reason)}</span><strong>+${item.amount}</strong><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small>${item.memo ? `<p>${escapeHtml(item.memo)}</p>` : ""}</button>`).join("")}</section>`;
-}
-function noteFeed(title, items) {
-  return `<section class="feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">메모가 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item note" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b></span><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small><p>${escapeHtml(item.note)}</p></button>`).join("")}</section>`;
-}
-function bibleFeed(title, items) {
-  return `<section class="feed bible-feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">성경 학습 기록이 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item bible-record" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b> · ${escapeHtml(item.lesson_title)}</span><strong>+${item.talents_awarded || 0}</strong><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small><p>${escapeHtml(item.verse_ref)}</p></button>`).join("")}</section>`;
-}
-
-async function signIn(form) {
-  if (!state.client) await initSupabase();
-  const email = String(form.get("email") || "").trim();
-  const password = String(form.get("password") || "");
-  const { error } = await state.client.auth.signInWithPassword({ email, password });
-  if (error) setMessage(error.message);
-}
-async function signOut() {
-  if (state.client) await state.client.auth.signOut();
-  state.session = null;
-  state.profile = null;
-  state.view = "login";
-  render();
-}
-async function awardTalent(payload) {
-  const student = getStudent(payload.studentId);
-  if (!student) { setMessage("아이를 먼저 등록하세요."); return false; }
-  const amount = Number(payload.amount);
-  if (state.client && state.session) {
-    const { error } = await state.client.from("talent_transactions").insert({ student_id: student.id, teacher_id: state.session.user.id, amount, reason: payload.reason, memo: payload.memo || null });
-    if (error) { setMessage(error.message); return false; }
-    await loadRemoteData();
-  }
-  state.selectedStudentId = student.id;
-  state.message = `${student.name}에게 ${amount} 달란트를 지급했습니다.`;
-  return true;
-}
-async function addNote(payload) {
-  const student = getStudent(payload.studentId);
-  if (!student) { setMessage("아이를 먼저 등록하세요."); return; }
-  if (state.client && state.session) {
-    const { error } = await state.client.from("student_notes").insert({ student_id: student.id, teacher_id: state.session.user.id, note: payload.note });
-    if (error) { setMessage(error.message); return; }
-    await loadRemoteData();
-  }
-  state.selectedStudentId = student.id;
-  state.message = "메모를 저장했습니다.";
-  state.view = "student";
-  render();
-}
-async function createStudent(payload) {
-  if (state.session && state.profile?.role !== "admin") { setMessage("관리자만 아이를 등록할 수 있습니다."); return; }
-  if (state.client && state.session) {
-    const { error } = await state.client.from("students").insert(payload);
-    if (error) { setMessage(error.message); return; }
-    await loadRemoteData();
-  }
-  state.message = "아이를 등록했습니다.";
-  render();
-}
-async function deactivateStudent(studentId) {
-  const student = getStudent(studentId);
-  if (state.session && state.profile?.role !== "admin") { setMessage("관리자만 아이를 삭제할 수 있습니다."); return; }
-  if (state.client && state.session) {
-    const { error } = await state.client.from("students").update({ is_active: false }).eq("id", studentId);
-    if (error) { setMessage(error.message); return; }
-    await loadRemoteData();
-  }
-  state.message = `${student?.name || "아이"}를 목록에서 삭제했습니다.`;
-  state.view = "admin";
-  render();
-}
-async function completeBibleLesson(studentId) {
-  const student = getStudent(studentId);
-  if (!student) { setMessage("아이를 먼저 등록하세요."); return; }
-  if (state.client && state.session) {
-    const record = { student_id: student.id, teacher_id: state.session.user.id, lesson_title: bibleLesson.title, verse_ref: bibleLesson.verseRef, completed_items: bibleLesson.words.length + bibleLesson.lines.length, talents_awarded: 2 };
-    const { error } = await state.client.from("bible_learning_records").insert(record);
-    if (error) { setMessage(error.message); return; }
-    await awardTalent({ studentId: student.id, amount: 2, reason: "성경학습", memo: `${bibleLesson.title} 완료` });
-    await loadRemoteData();
-  }
-  state.selectedStudentId = student.id;
-  state.message = `${student.name}의 성경 학습을 완료하고 2 달란트를 기록했습니다.`;
-  state.view = "student";
-  render();
-}
-function speak(text) {
-  window.speechSynthesis?.cancel();
-  if (!window.speechSynthesis) { setMessage("이 브라우저에서는 음성 재생을 지원하지 않습니다."); return; }
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
-  utterance.rate = 0.82;
-  window.speechSynthesis.speak(utterance);
-}
-function render() {
-  const root = document.getElementById("root");
-  const views = { home: homeView, students: studentsView, student: studentView, award: awardView, note: noteView, bible: bibleView, admin: adminView, settings: settingsView, login: loginView };
-  if (isConfigured() && !state.session && state.view !== "settings") state.view = "login";
-  root.innerHTML = layout((views[state.view] || homeView)());
-  bindEvents(root);
-}
+function guardianText(studentId) { const links = state.guardianLinks.filter((link) => link.student_id === studentId); if (!links.length) return ""; const names = links.map((link) => state.users.find((user) => user.id === link.guardian_id)?.name || "보호자").join(", "); return ` · 보호자: ${escapeHtml(names)}`; }
+function permissionView() { return `<section class="stack"><div class="form-panel"><h2>접근 권한이 없습니다</h2><p class="empty">이 화면은 관리자 또는 선생님 권한이 필요합니다.</p></div></section>`; }
+function settingsView() { return `<section class="stack"><form class="form-panel" id="config-form"><h2>Supabase 연결 설정</h2><p class="empty">Project URL과 anon public key만 브라우저에 저장합니다. service_role key는 절대 입력하지 마세요.</p><label>Project URL<input name="url" required value="${escapeHtml(state.config?.url || DEFAULT_SUPABASE_URL)}" /></label><label>Anon public key<input name="anonKey" required value="${escapeHtml(state.config?.anonKey || DEFAULT_SUPABASE_ANON_KEY)}" /></label><button class="primary-button" type="submit">설정 저장</button></form></section>`; }
+function studentSelect(selectedId) { return `<label>아이 선택<select name="studentId">${state.students.map((item) => `<option value="${item.id}" ${item.id === selectedId ? "selected" : ""}>${escapeHtml(item.name)} · ${escapeHtml(item.group_name)}</option>`).join("")}</select></label>`; }
+function transactionFeed(title, items) { return `<section class="feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">기록이 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b> · ${escapeHtml(item.reason)}</span><strong>+${item.amount}</strong><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small>${item.memo ? `<p>${escapeHtml(item.memo)}</p>` : ""}</button>`).join("")}</section>`; }
+function noteFeed(title, items) { return `<section class="feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">메모가 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item note" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b></span><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small><p>${escapeHtml(item.note)}</p></button>`).join("")}</section>`; }
+function bibleFeed(title, items) { return `<section class="feed bible-feed"><h2>${title}</h2>${items.length === 0 ? `<p class="empty">성경 학습 기록이 없습니다.</p>` : ""}${items.map((item) => `<button class="feed-item bible-record" type="button" data-student="${item.student_id}"><span><b>${escapeHtml(item.student_name)}</b> · ${escapeHtml(item.lesson_title)}</span><strong>+${item.talents_awarded || 0}</strong><small>${formatDate(item.created_at)} · ${escapeHtml(item.teacher_name)}</small><p>${escapeHtml(item.verse_ref)}</p></button>`).join("")}</section>`; }
+async function signIn(form) { if (!state.client) await initSupabase(); const email = String(form.get("email") || "").trim(); const password = String(form.get("password") || ""); const { error } = await state.client.auth.signInWithPassword({ email, password }); if (error) setMessage(error.message); }
+async function signInWithGoogle() { if (!state.client) await initSupabase(); const redirectTo = `${window.location.origin}${window.location.pathname}`; const { error } = await state.client.auth.signInWithOAuth({ provider: "google", options: { redirectTo } }); if (error) setMessage(error.message); }
+async function signOut() { if (state.client) await state.client.auth.signOut(); state.session = null; clearRemoteState(); state.view = "login"; render(); }
+async function awardTalent(payload) { const student = getStudent(payload.studentId); if (!student) { setMessage("아이를 먼저 등록하세요."); return false; } if (!isStaff()) { setMessage("선생님 권한이 필요합니다."); return false; } const amount = Number(payload.amount); const { error } = await state.client.from("talent_transactions").insert({ student_id: student.id, teacher_id: state.session.user.id, amount, reason: payload.reason, memo: payload.memo || null }); if (error) { setMessage(error.message); return false; } await loadRemoteData(); state.selectedStudentId = student.id; state.message = `${student.name}에게 ${amount} 달란트를 지급했습니다.`; return true; }
+async function addNote(payload) { if (!isStaff()) return setMessage("선생님 권한이 필요합니다."); const student = getStudent(payload.studentId); if (!student) return setMessage("아이를 먼저 등록하세요."); const { error } = await state.client.from("student_notes").insert({ student_id: student.id, teacher_id: state.session.user.id, note: payload.note }); if (error) return setMessage(error.message); await loadRemoteData(); state.selectedStudentId = student.id; state.message = "메모를 저장했습니다."; state.view = "student"; render(); }
+async function createStudent(payload) { if (!isAdmin()) return setMessage("관리자만 아이를 등록할 수 있습니다."); const { error } = await state.client.from("students").insert(payload); if (error) return setMessage(error.message); await loadRemoteData(); state.message = "아이를 등록했습니다."; render(); }
+async function deactivateStudent(studentId) { if (!isAdmin()) return setMessage("관리자만 아이를 삭제할 수 있습니다."); const student = getStudent(studentId); const { error } = await state.client.from("students").update({ is_active: false }).eq("id", studentId); if (error) return setMessage(error.message); await loadRemoteData(); state.message = `${student?.name || "아이"}를 목록에서 삭제했습니다.`; state.view = "admin"; render(); }
+async function updateUserRole(userId, role) { if (!isAdmin()) return; const { error } = await state.client.from("users").update({ role }).eq("id", userId); if (error) return setMessage(error.message); await loadRemoteData(); setMessage("사용자 권한을 변경했습니다."); }
+async function linkGuardian(payload) { if (!isAdmin()) return; if (!payload.student_id || !payload.guardian_id) return setMessage("아이와 보호자를 선택하세요."); const { error } = await state.client.from("student_guardians").upsert(payload); if (error) return setMessage(error.message); await loadRemoteData(); setMessage("보호자 연결을 저장했습니다."); }
+async function completeBibleLesson(studentId) { if (!isStaff()) return setMessage("선생님 권한이 필요합니다."); const student = getStudent(studentId); if (!student) return setMessage("아이를 먼저 등록하세요."); const record = { student_id: student.id, teacher_id: state.session.user.id, lesson_title: bibleLesson.title, verse_ref: bibleLesson.verseRef, completed_items: bibleLesson.words.length + bibleLesson.lines.length, talents_awarded: 2 }; const { error } = await state.client.from("bible_learning_records").insert(record); if (error) return setMessage(error.message); await awardTalent({ studentId: student.id, amount: 2, reason: "성경학습", memo: `${bibleLesson.title} 완료` }); await loadRemoteData(); state.selectedStudentId = student.id; state.message = `${student.name}의 성경 학습을 완료하고 2 달란트를 기록했습니다.`; state.view = "student"; render(); }
+function speak(text) { window.speechSynthesis?.cancel(); if (!window.speechSynthesis) return setMessage("이 브라우저에서는 음성 재생을 지원하지 않습니다."); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = "en-US"; utterance.rate = 0.82; window.speechSynthesis.speak(utterance); }
+function render() { const root = document.getElementById("root"); const views = { home: homeView, students: studentsView, student: studentView, award: awardView, note: noteView, bible: bibleView, admin: adminView, settings: settingsView, login: loginView }; if (isConfigured() && !state.session && state.view !== "settings") state.view = "login"; if (!isStaff() && ["award", "note"].includes(state.view)) state.view = "home"; if (!isAdmin() && state.view === "admin") state.view = "home"; root.innerHTML = layout((views[state.view] || homeView)()); bindEvents(root); }
 function bindEvents(root) {
   root.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
   root.querySelectorAll("[data-student]").forEach((button) => button.addEventListener("click", () => selectStudent(button.dataset.student)));
   root.querySelectorAll("[data-amount]").forEach((button) => button.addEventListener("click", () => { state.amount = Number(button.dataset.amount); render(); }));
   root.querySelectorAll("[data-speak]").forEach((button) => button.addEventListener("click", () => speak(button.dataset.speak)));
   root.querySelector("[data-action='logout']")?.addEventListener("click", signOut);
-  root.querySelector("#config-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    saveConfig({ url: String(form.get("url")).trim(), anonKey: String(form.get("anonKey")).trim() });
-    state.client = null;
-    await initSupabase();
-    state.message = "Supabase 설정을 저장했습니다.";
-    state.view = state.session ? "home" : "login";
-    render();
-  });
+  root.querySelector("[data-action='google-login']")?.addEventListener("click", signInWithGoogle);
+  root.querySelector("#config-form")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); saveConfig({ url: String(form.get("url")).trim(), anonKey: String(form.get("anonKey")).trim() }); state.client = null; await initSupabase(); state.message = "Supabase 설정을 저장했습니다."; state.view = state.session ? "home" : "login"; render(); });
   root.querySelector("#login-form")?.addEventListener("submit", async (event) => { event.preventDefault(); await signIn(new FormData(event.currentTarget)); });
-  root.querySelector("#award-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const ok = await awardTalent({ studentId: form.get("studentId"), amount: state.amount, reason: form.get("reason"), memo: form.get("memo") });
-    if (ok) { state.view = "student"; render(); }
-  });
-  root.querySelector("#note-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const note = String(form.get("note") || "").trim();
-    if (note) await addNote({ studentId: form.get("studentId"), note });
-  });
-  root.querySelector("#student-form")?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    await createStudent({ name: form.get("name"), grade: form.get("grade"), group_name: form.get("groupName") });
-  });
+  root.querySelector("#award-form")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const ok = await awardTalent({ studentId: form.get("studentId"), amount: state.amount, reason: form.get("reason"), memo: form.get("memo") }); if (ok) { state.view = "student"; render(); } });
+  root.querySelector("#note-form")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const note = String(form.get("note") || "").trim(); if (note) await addNote({ studentId: form.get("studentId"), note }); });
+  root.querySelector("#student-form")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await createStudent({ name: form.get("name"), grade: form.get("grade"), group_name: form.get("groupName") }); });
+  root.querySelector("#guardian-link-form")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await linkGuardian({ student_id: form.get("studentId"), guardian_id: form.get("guardianId"), relationship: form.get("relationship") || "보호자" }); });
+  root.querySelectorAll("[data-user-role]").forEach((select) => select.addEventListener("change", () => updateUserRole(select.dataset.userRole, select.value)));
   root.querySelectorAll("[data-deactivate-student]").forEach((button) => button.addEventListener("click", async () => deactivateStudent(button.dataset.deactivateStudent)));
-  root.querySelector("[data-action='complete-bible']")?.addEventListener("click", async () => {
-    const select = root.querySelector("select[name='studentId']");
-    await completeBibleLesson(select?.value || state.selectedStudentId);
-  });
+  root.querySelector("[data-action='complete-bible']")?.addEventListener("click", async () => { const select = root.querySelector("select[name='studentId']"); await completeBibleLesson(select?.value || state.selectedStudentId); });
 }
-
-document.addEventListener("DOMContentLoaded", async () => {
-  render();
-  await initSupabase();
-  render();
-});
+document.addEventListener("DOMContentLoaded", async () => { render(); await initSupabase(); render(); });
