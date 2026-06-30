@@ -1,17 +1,3 @@
--- 2026-06-30 weekly Bible completion update
--- Purpose: connected guardians and assigned staff can complete Bible English once per student per ISO week and award 2 talents.
-
-alter table public.bible_learning_records
-add column if not exists lesson_week text;
-
-update public.bible_learning_records
-set lesson_week = to_char(created_at at time zone 'Asia/Seoul', 'IYYY-IW')
-where lesson_week is null;
-
-create unique index if not exists bible_learning_records_student_week_uidx
-on public.bible_learning_records(student_id, lesson_week)
-where lesson_week is not null;
-
 create or replace function public.complete_weekly_bible_lesson(
   p_student_id uuid,
   p_lesson_title text,
@@ -62,7 +48,8 @@ begin
   end if;
 
   if exists (
-    select 1 from public.bible_learning_records blr
+    select 1
+    from public.bible_learning_records blr
     where blr.student_id = p_student_id
       and blr.lesson_week = v_week
   ) then
