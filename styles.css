@@ -56,11 +56,14 @@ button {
 }
 
 .church-title {
-  margin: 0 0 4px;
-  color: #24312d;
-  font-size: clamp(2rem, 7vw, 3.4rem);
-  line-height: 1.02;
-  font-weight: 950;
+  margin: 0 0 10px;
+}
+
+.church-logo {
+  display: block;
+  width: clamp(190px, 34vw, 330px);
+  max-width: 100%;
+  height: auto;
 }
 
 .eyebrow {
