@@ -62,7 +62,7 @@
   const previousBindEventsForWeeklyBible = bindEvents;
   bindEvents = function patchedWeeklyBibleBindEvents(root) {
     previousBindEventsForWeeklyBible(root);
-    root.querySelector("select[name='studentId']")?.addEventListener("change", (event) => {
+    root.querySelector(".bible-view select[name='studentId']")?.addEventListener("change", (event) => {
       state.selectedStudentId = event.target.value;
       render();
     });
