@@ -1,0 +1,9 @@
+2026-06-30 backup reference
+
+Original app file kept in place and not overwritten:
+- path: 2026-06-29-app.js
+- blob sha: 3521abe3e1c34725b2b26a5901cdbafb92dd9c79
+- repository: hty9330-sys/talent-bible-school
+
+Reason:
+The existing app file is large, so this update keeps it untouched and loads a small patch script after it. The root index.html before this update is backed up in this folder as index.html.
