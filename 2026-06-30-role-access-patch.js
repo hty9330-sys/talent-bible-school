@@ -3,7 +3,7 @@
 
   const fixedAdminEmail = "hty9330@gmail.com";
   const roleEntries = [
-    ["visitor", "일반인"],
+    ["visitor", "방문객"],
     ["guardian", "보호자"],
     ["teacher", "선생님"],
     ["admin", "관리자"]
@@ -56,7 +56,7 @@
       weekday: "long"
     }).format(new Date());
     const announcements = (state.announcements || []).filter((item) => item.is_active !== false).slice(0, 5);
-    return `<section class="stack"><div class="date-strip"><span>${today}</span></div><section class="feed announcement-feed"><h2>교회 소식</h2>${announcements.length === 0 ? `<p class="empty">등록된 교회 소식이 없습니다.</p>` : ""}${announcements.map((item) => `<div class="feed-item announcement-item"><span><b>${escapeHtml(item.title)}</b></span><small>${formatDate(item.created_at)}</small><p>${escapeHtml(item.body)}</p></div>`).join("")}</section><div class="hero-panel"><span>관리자 승인 대기</span><strong>일반인</strong><p>관리자가 보호자, 선생님, 관리자 권한을 부여하면 아이 기록과 성경 학습 탭을 사용할 수 있습니다.</p></div></section>`;
+    return `<section class="stack"><div class="date-strip"><span>${today}</span></div><section class="feed announcement-feed"><h2>교회 소식</h2>${announcements.length === 0 ? `<p class="empty">등록된 교회 소식이 없습니다.</p>` : ""}${announcements.map((item) => `<div class="feed-item announcement-item"><span><b>${escapeHtml(item.title)}</b></span><small>${formatDate(item.created_at)}</small><p>${escapeHtml(item.body)}</p></div>`).join("")}</section><div class="hero-panel"><span>관리자 승인 대기</span><strong>방문객</strong><p>관리자가 보호자, 선생님, 관리자 권한을 부여하면 아이 기록과 성경 학습 탭을 사용할 수 있습니다.</p></div></section>`;
   }
 
   const previousHomeViewForRoles = homeView;
