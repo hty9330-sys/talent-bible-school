@@ -146,7 +146,7 @@ function splitVerseLines(text) { return String(text || "").split(/\n+|(?<=[.!?;]
 function sentenceCase(word) { return word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : ""; }
 function buildWordCard(word) {
   const clean = word.toLowerCase();
-  return { word: sentenceCase(clean), sound: "듣기 버튼으로 발음 확인", meaning: bibleWordGlossary[clean] || "새 단어, 선생님과 뜻을 확인해요", example: clean };
+  return { word: sentenceCase(clean), sound: "듣기 버튼으로 발음 확인", meaning: bibleWordGlossary[clean] || `${sentenceCase(clean)}의 뜻`, example: clean };
 }
 function buildWordsFromVerse(text) {
   const seen = new Set();
