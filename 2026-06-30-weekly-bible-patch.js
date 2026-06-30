@@ -1,8 +1,8 @@
 (() => {
   if (typeof state === "undefined") return;
 
-  function currentIsoWeekKey() {
-    const date = new Date();
+  function isoWeekKeyFromDate(value) {
+    const date = value ? new Date(value) : new Date();
     const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const day = utc.getUTCDay() || 7;
     utc.setUTCDate(utc.getUTCDate() + 4 - day);
@@ -11,13 +11,25 @@
     return String(utc.getUTCFullYear()) + "-" + String(week).padStart(2, "0");
   }
 
+  function currentIsoWeekKey() {
+    return isoWeekKeyFromDate();
+  }
+
+  function weeklyBibleTransaction(studentId) {
+    const week = currentIsoWeekKey();
+    return state.transactions.find((item) => item.student_id === studentId
+      && item.reason === "성경학습"
+      && Number(item.amount) === 2
+      && isoWeekKeyFromDate(item.created_at) === week);
+  }
+
   function weeklyBibleRecord(studentId) {
     const week = currentIsoWeekKey();
     return state.bibleRecords.find((record) => record.student_id === studentId && record.lesson_week === week);
   }
 
   function weeklyBibleCompleted(studentId) {
-    return Boolean(weeklyBibleRecord(studentId));
+    return Boolean(weeklyBibleTransaction(studentId));
   }
 
   function selectedBibleStudent() {
@@ -34,7 +46,7 @@
     const student = selectedBibleStudent();
     const lesson = currentBibleLesson();
     const completed = student ? weeklyBibleCompleted(student.id) : false;
-    const completedRecord = student ? weeklyBibleRecord(student.id) : null;
+    const completedRecord = student ? weeklyBibleTransaction(student.id) || weeklyBibleRecord(student.id) : null;
     const selectLabel = state.profile?.role === "guardian" ? "보호자로 연결된 아이 선택" : "아이 선택";
     return `<section class="stack bible-view"><div class="section-heading"><h2>성경 영어 학습</h2><span>${escapeHtml(lesson.verseRef)}</span></div><div class="form-panel bible-lesson-panel">${student ? studentSelect(student.id).replace("아이 선택", selectLabel) : `<p class="empty">아이를 먼저 등록하거나 연결하세요.</p>`}<p class="eyebrow">${escapeHtml(lesson.title)}</p><h2>오늘의 말씀과 단어</h2><p class="empty">관리자가 입력한 이번 주 말씀에서 어려운 단어를 자동으로 뽑습니다.</p><div class="word-grid">${lesson.words.map((item) => `<div class="word-card"><div><strong>${escapeHtml(item.word)}</strong><small>${escapeHtml(item.sound)}</small></div><p>${escapeHtml(item.meaning)}</p><button class="audio-button" type="button" data-speak="${escapeHtml(item.word + ". " + item.example)}">듣기</button></div>`).join("")}</div></div><div class="form-panel compact"><h2>이번 주 학습 완료</h2>${student ? `<p class="empty">${escapeHtml(student.name)}의 성경 영어 학습을 한 주에 한 번 완료 처리합니다.</p><div class="metric-grid"><div class="metric"><span>이번 주 상태</span><strong>${completed ? "완료" : "미완료"}</strong></div><div class="metric"><span>지급 달란트</span><strong>${completed ? "+2" : "+2 예정"}</strong></div></div>${completed ? `<p class="empty">이미 이번 주 학습 완료가 기록되었습니다. ${completedRecord ? formatDate(completedRecord.created_at) : ""}</p>` : `<button class="primary-button" type="button" data-complete-weekly-bible="${student.id}">학습 완료하고 2달란트 지급</button>`}` : `<p class="empty">연결된 아이가 없어서 완료 처리할 수 없습니다.</p>`}</div><div class="feed verse-panel"><h2>영어 말씀 듣기</h2><div class="speed-control"><span>읽기 속도</span>${speechRates.map((rate) => `<button class="${state.speechRate === rate.value ? "active" : ""}" type="button" data-speech-rate="${rate.value}">${rate.label}</button>`).join("")}</div>${lesson.lines.map((line, index) => `<div class="verse-line"><span>${index + 1}. ${escapeHtml(line)}</span><button class="audio-button" type="button" data-speak="${escapeHtml(line)}">듣기</button></div>`).join("")}${lesson.koLines?.length ? `<div class="translation-panel"><h3>한글 개역개정 해석</h3>${lesson.koLines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}</div>` : ""}<button class="secondary-button" type="button" data-speak="${escapeHtml(lesson.lines.join(" "))}">전체 말씀 듣기</button></div></section>`;
   };

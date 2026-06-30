@@ -15,8 +15,8 @@
     }).format(new Date());
   }
 
-  function currentIsoWeekKeyForAnnouncements() {
-    const date = new Date();
+  function isoWeekKeyFromDateForAnnouncements(value) {
+    const date = value ? new Date(value) : new Date();
     const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const day = utc.getUTCDay() || 7;
     utc.setUTCDate(utc.getUTCDate() + 4 - day);
@@ -26,8 +26,11 @@
   }
 
   function weeklyBibleCompletedForHome(studentId) {
-    const week = currentIsoWeekKeyForAnnouncements();
-    return state.bibleRecords.some((record) => record.student_id === studentId && record.lesson_week === week);
+    const week = isoWeekKeyFromDateForAnnouncements();
+    return state.transactions.some((item) => item.student_id === studentId
+      && item.reason === "성경학습"
+      && Number(item.amount) === 2
+      && isoWeekKeyFromDateForAnnouncements(item.created_at) === week);
   }
 
   function announcementById(id) {
