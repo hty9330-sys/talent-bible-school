@@ -327,6 +327,55 @@ label textarea {
   border-color: rgba(194, 116, 45, 0.28);
 }
 
+.stories-view,
+.story-board {
+  grid-column: 1 / -1;
+}
+
+.story-tabs button.active,
+.like-button.active {
+  border-color: #2f6f63;
+  background: #e4f2ec;
+  color: #214d45;
+}
+
+.story-post {
+  gap: 12px;
+}
+
+.story-post-head,
+.story-comment span,
+.story-comment-form {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.story-post-head span {
+  display: grid;
+  gap: 4px;
+}
+
+.story-comments {
+  border-top: 1px solid #e4ebe7;
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.story-comment {
+  border-radius: 8px;
+  background: #f6fbf2;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+}
+
+.story-comment-form input {
+  flex: 1;
+}
+
 .check-row {
   display: flex;
   align-items: center;
@@ -412,7 +461,7 @@ textarea {
   transform: translateX(-50%);
   width: min(980px, 100%);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
   gap: 8px;
   padding: 10px 12px 14px;
   background: rgba(255, 248, 237, 0.94);
@@ -640,8 +689,16 @@ textarea {
 
 @media (max-width: 560px) {
   .word-grid,
-  .action-row {
+  .action-row,
+  .story-post-head,
+  .story-comment-form {
     grid-template-columns: 1fr;
+  }
+
+  .story-post-head,
+  .story-comment-form {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .speed-control {
@@ -653,7 +710,6 @@ textarea {
   }
 
   .bottom-nav {
-    grid-template-columns: repeat(5, 1fr);
     gap: 5px;
     padding-inline: 8px;
   }
@@ -662,11 +718,5 @@ textarea {
     min-height: 46px;
     padding: 0 4px;
     font-size: 0.86rem;
-  }
-}
-
-@media (min-width: 561px) {
-  .bottom-nav {
-    grid-template-columns: repeat(5, 1fr);
   }
 }
