@@ -39,8 +39,9 @@
   }
 
   function canAccessView(view) {
-    if (!state.session) return ["login", "settings", "home"].includes(view);
-    if (["home", "settings", "login"].includes(view)) return true;
+    if (!state.session) return ["login", "home"].includes(view);
+    if (view === "settings") return isAdmin();
+    if (["home", "login"].includes(view)) return true;
     if (["students", "student", "bible"].includes(view)) return canUseApprovedTabs();
     if (["award", "note"].includes(view)) return isStaff();
     if (view === "admin") return isAdmin();
@@ -77,7 +78,7 @@
       navItems.push(["bible", "성경"]);
       if (isAdmin()) navItems.push(["admin", "관리"]);
     }
-    return `<div class="app-shell"><header class="topbar"><div><div class="church-title"><img class="church-logo" src="./assets/2026-06-30-deulsaram-header-logo.png" alt="들사람교회" /></div><p class="eyebrow">달란트 성경학교</p><h1>아이들의 말씀과 성장을 함께 기록해요</h1></div><div class="topbar-actions">${state.session ? `<button class="ghost-button" type="button" data-action="logout">로그아웃</button>` : `<button class="ghost-button" type="button" data-view="login">로그인</button>`}<button class="ghost-button" type="button" data-view="settings">설정</button></div></header><div class="notice">${modeText}${state.loading ? " · 불러오는 중" : ""}</div>${state.message ? `<div class="toast">${escapeHtml(state.message)}</div>` : ""}<main>${content}</main><nav class="bottom-nav" aria-label="주요 메뉴">${navItems.map(([view, label]) => navButton(view, label)).join("")}</nav></div>`;
+    return `<div class="app-shell"><header class="topbar"><div><div class="church-title"><img class="church-logo" src="./assets/2026-06-30-deulsaram-header-logo.png" alt="들사람교회" /></div><p class="eyebrow">달란트 성경학교</p><h1>아이들의 말씀과 성장을 함께 기록해요</h1></div><div class="topbar-actions">${state.session ? `<button class="ghost-button" type="button" data-action="logout">로그아웃</button>` : `<button class="ghost-button" type="button" data-view="login">로그인</button>`}${isAdmin() ? `<button class="ghost-button" type="button" data-view="settings">설정</button>` : ""}</div></header><div class="notice">${modeText}${state.loading ? " · 불러오는 중" : ""}</div>${state.message ? `<div class="toast">${escapeHtml(state.message)}</div>` : ""}<main>${content}</main><nav class="bottom-nav" aria-label="주요 메뉴">${navItems.map(([view, label]) => navButton(view, label)).join("")}</nav></div>`;
   };
 
   const previousSetViewForRoles = setView;
@@ -129,7 +130,7 @@
   render = function patchedRoleRender() {
     const root = document.getElementById("root");
     const views = { home: homeView, students: studentsView, student: studentView, award: awardView, note: noteView, bible: bibleView, admin: adminView, settings: settingsView, login: loginView };
-    if (isConfigured() && !state.session && state.view !== "settings") state.view = "login";
+    if (isConfigured() && !state.session) state.view = "login";
     if (state.session && !canAccessView(state.view)) state.view = "home";
     root.innerHTML = layout((views[state.view] || homeView)());
     bindEvents(root);

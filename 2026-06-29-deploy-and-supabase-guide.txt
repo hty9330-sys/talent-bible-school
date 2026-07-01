@@ -108,3 +108,8 @@ GitHub Pages 업로드:
 - manifest 아이콘 purpose를 any로 조정해 아이콘이 잘리는 문제를 줄였다.
 - 원어민 영어 읽기 속도를 전체적으로 낮췄다: 천천히 0.45, 보통 0.6, 빠르게 0.75.
 - 최신 검증 주소: https://hty9330-sys.github.io/talent-bible-school/?v=20260630-01
+
+2026-07-01 설정 화면 관리자 제한
+- 관리자 외 사용자는 상단 설정 버튼이 보이지 않도록 했다.
+- 직접 settings 화면으로 접근하더라도 관리자만 볼 수 있도록 메인 앱과 역할 권한 패치를 함께 수정했다.
+- 최신 검증 주소: https://hty9330-sys.github.io/talent-bible-school/?v=20260701-01
