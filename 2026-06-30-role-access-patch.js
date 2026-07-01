@@ -75,7 +75,7 @@
     if (canUseApprovedTabs()) {
       navItems.push(["students", "아이"]);
       if (isStaff()) navItems.push(["award", "지급"]);
-      navItems.push(["bible", "성경"]);
+      navItems.push(["bible", "학습"]);
       if (isAdmin()) navItems.push(["admin", "관리"]);
     }
     return `<div class="app-shell"><header class="topbar"><div><div class="church-title"><img class="church-logo" src="./assets/2026-06-30-deulsaram-header-logo.png" alt="들사람교회" /></div><p class="eyebrow">달란트 성경학교</p><h1>아이들의 말씀과 성장을 함께 기록해요</h1></div><div class="topbar-actions">${state.session ? `<button class="ghost-button" type="button" data-action="logout">로그아웃</button>` : `<button class="ghost-button" type="button" data-view="login">로그인</button>`}${isAdmin() ? `<button class="ghost-button" type="button" data-view="settings">설정</button>` : ""}</div></header><div class="notice">${modeText}${state.loading ? " · 불러오는 중" : ""}</div>${state.message ? `<div class="toast">${escapeHtml(state.message)}</div>` : ""}<main>${content}</main><nav class="bottom-nav" aria-label="주요 메뉴">${navItems.map(([view, label]) => navButton(view, label)).join("")}</nav></div>`;
