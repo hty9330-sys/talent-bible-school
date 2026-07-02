@@ -1,0 +1,59 @@
+.admin-section-nav {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-section-nav button {
+  border: 1px solid #d7ded4;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #315049;
+  min-height: 44px;
+  padding: 0 10px;
+  font-weight: 900;
+}
+
+.admin-section-nav button.active {
+  background: #2f6f63;
+  border-color: #2f6f63;
+  color: #fff;
+}
+
+.admin-section-hidden {
+  display: none !important;
+}
+
+.bottom-nav {
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}
+
+.bottom-nav button {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.story-post .feed-actions,
+.story-comment .feed-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 430px) {
+  .admin-section-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bottom-nav {
+    gap: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .bottom-nav button {
+    min-height: 46px;
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 0.92rem;
+  }
+}
