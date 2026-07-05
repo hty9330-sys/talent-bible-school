@@ -76,7 +76,7 @@
     const title = editing?.title || "";
     const body = editing?.body || "";
     const checked = editing?.is_active === false ? "" : " checked";
-    return `<form class="form-panel compact" id="church-announcement-form"><h3>${editing ? "교회 소식 수정" : "교회 소식 등록"}</h3><label>제목<input name="title" required value="${escapeHtml(title)}" /></label><label>내용<textarea name="body" required placeholder="홈 화면에 게시할 교회 소식을 입력하세요.">${escapeHtml(body)}</textarea></label><label class="check-row"><input name="isActive" type="checkbox"${checked} /> 홈 화면에 게시</label><div class="action-row">${editing ? `<button class="secondary-button" type="button" data-cancel-announcement-edit>취소</button>` : `<span></span>`}<button class="primary-button" type="submit">${editing ? "소식 수정 저장" : "소식 게시"}</button></div></form><div class="feed"><h2>교회 소식 관리</h2>${state.announcements.length === 0 ? `<p class="empty">등록된 교회 소식이 없습니다.</p>` : ""}${state.announcements.map((item) => `<div class="feed-item announcement-item"><span><b>${escapeHtml(item.title)}</b> · ${item.is_active === false ? "숨김" : "게시중"}</span><small>${formatDate(item.created_at)} · ${escapeHtml(userName(item.created_by, "관리자"))}</small><p>${escapeHtml(item.body)}</p><div class="feed-actions"><button class="secondary-button edit-button" type="button" data-edit-announcement="${item.id}">수정</button><button class="secondary-button delete-button" type="button" data-hide-announcement="${item.id}">숨김</button></div></div>`).join("")}</div>`;
+    return `<form class="form-panel compact" id="church-announcement-form"><h3>${editing ? "교회 소식 수정" : "교회 소식 등록"}</h3><label>제목<input name="title" required value="${escapeHtml(title)}" /></label><label>내용<textarea name="body" required placeholder="홈 화면에 게시할 교회 소식을 입력하세요.">${escapeHtml(body)}</textarea></label><label class="check-row"><input name="isActive" type="checkbox"${checked} /> 홈 화면에 게시</label><div class="action-row">${editing ? `<button class="secondary-button" type="button" data-cancel-announcement-edit>취소</button>` : `<span></span>`}<button class="primary-button" type="submit">${editing ? "소식 수정 저장" : "소식 게시"}</button></div></form><div class="feed"><h2>교회 소식 관리</h2>${state.announcements.length === 0 ? `<p class="empty">등록된 교회 소식이 없습니다.</p>` : ""}${state.announcements.map((item) => `<div class="feed-item announcement-item"><span><b>${escapeHtml(item.title)}</b> · ${item.is_active === false ? "숨김" : "게시중"}</span><small>${formatDate(item.created_at)} · ${escapeHtml(userName(item.created_by, "관리자"))}</small><p>${escapeHtml(item.body)}</p><div class="feed-actions"><button class="secondary-button edit-button" type="button" data-edit-announcement="${item.id}">수정</button><button class="secondary-button delete-button" type="button" data-delete-announcement="${item.id}">삭제</button></div></div>`).join("")}</div>`;
   }
 
   const previousClearRemoteState = clearRemoteState;
@@ -182,15 +182,15 @@
     render();
   }
 
-  async function hideAnnouncement(id) {
+  async function deleteAnnouncement(id) {
     if (!isAdmin()) return;
-    const { error } = await state.client.from("church_announcements").update({
-      is_active: false,
-      updated_at: new Date().toISOString()
-    }).eq("id", id);
+    const target = announcementById(id);
+    if (!window.confirm(`"${target ? target.title : "이 소식"}"을(를) 삭제할까요? 삭제하면 되돌릴 수 없습니다.`)) return;
+    const { error } = await state.client.from("church_announcements").delete().eq("id", id);
     if (error) return setMessage(error.message);
+    if (state.editingAnnouncementId === id) state.editingAnnouncementId = "";
     await loadRemoteData();
-    state.message = "교회 소식을 숨김 처리했습니다.";
+    state.message = "교회 소식을 삭제했습니다.";
     render();
   }
 
@@ -249,8 +249,8 @@
         render();
       });
     });
-    root.querySelectorAll("[data-hide-announcement]").forEach((button) => {
-      button.addEventListener("click", () => hideAnnouncement(button.dataset.hideAnnouncement));
+    root.querySelectorAll("[data-delete-announcement]").forEach((button) => {
+      button.addEventListener("click", () => deleteAnnouncement(button.dataset.deleteAnnouncement));
     });
   };
 })();
