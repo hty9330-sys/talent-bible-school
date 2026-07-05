@@ -51,3 +51,5 @@ cd C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-28
 - 교환 내역 기록
 - 아이별 사용 내역
 - 통계 화면
+
+<!-- redeploy trigger 2026-07-06 -->
