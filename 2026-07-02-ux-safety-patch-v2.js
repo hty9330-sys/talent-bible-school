@@ -83,6 +83,28 @@
     enhanceAdminSections(root);
   };
 
+  async function saveWeeklyBibleLessonDirectly(payload) {
+    const { error: updateError } = await state.client
+      .from("weekly_bible_lessons")
+      .update({ is_active: false })
+      .eq("is_active", true);
+    if (updateError) return { error: updateError };
+
+    const { data, error } = await state.client
+      .from("weekly_bible_lessons")
+      .insert({
+        title: payload.title,
+        verse_ref: payload.verseRef,
+        verse_text: payload.verseText,
+        verse_ko: payload.verseKo,
+        created_by: state.session.user.id,
+        is_active: true
+      })
+      .select("*")
+      .maybeSingle();
+    return { data, error };
+  }
+
   updateWeeklyBibleLesson = async function patchedSafeWeeklyBibleLesson(payload) {
     if (!isAdmin()) return setMessage("관리자만 성경 구절을 업데이트할 수 있습니다.");
     const { data, error } = await state.client.rpc("save_weekly_bible_lesson", {
@@ -98,6 +120,27 @@
     state.bibleLesson = normalizeBibleLesson(data);
     await loadRemoteData();
     state.message = "이번 주 성경 구절을 안전하게 저장했습니다.";
+    state.view = "bible";
+    render();
+  };
+
+  updateWeeklyBibleLesson = async function patchedSafeWeeklyBibleLessonWithFallback(payload) {
+    if (!isAdmin()) return setMessage("관리자만 성경 구절을 업데이트할 수 있습니다.");
+    const { data, error } = await state.client.rpc("save_weekly_bible_lesson", {
+      p_title: payload.title,
+      p_verse_ref: payload.verseRef,
+      p_verse_text: payload.verseText,
+      p_verse_ko: payload.verseKo
+    });
+    let savedLesson = data;
+    if (error) {
+      const fallback = await saveWeeklyBibleLessonDirectly(payload);
+      if (fallback.error) return setMessage(fallback.error.message || error.message);
+      savedLesson = fallback.data;
+    }
+    if (savedLesson) state.bibleLesson = normalizeBibleLesson(savedLesson);
+    await loadRemoteData();
+    state.message = "이번 주 성경 구절을 저장했습니다.";
     state.view = "bible";
     render();
   };

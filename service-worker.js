@@ -1,15 +1,17 @@
-const CACHE_NAME = "talent-bible-school-v20260702-02";
+const CACHE_NAME = "talent-bible-school-v20260705-01";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./2026-06-29-auth.css",
+  "./2026-07-02-ux-safety.css",
   "./2026-06-29-app.js",
   "./2026-06-30-teacher-match-patch.js",
   "./2026-06-30-weekly-bible-patch.js",
   "./2026-06-30-home-announcements-patch.js",
   "./2026-06-30-role-access-patch.js",
   "./2026-07-02-stories-patch.js",
+  "./2026-07-02-ux-safety-patch-v2.js",
   "./manifest.json",
   "./assets/2026-06-30-deulsaram-header-logo.png",
   "./assets/icons/deulsaram-app-icon-192.png",
