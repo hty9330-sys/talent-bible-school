@@ -16,13 +16,23 @@
   }
 
   function isoWeekKeyFromDateForAnnouncements(value) {
+    // 2026-07-06: 일요일 시작 주간 기준으로 통일 (weekly-bible-patch와 동일 로직, Asia/Seoul)
     const date = value ? new Date(value) : new Date();
-    const utc = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const day = utc.getUTCDay() || 7;
-    utc.setUTCDate(utc.getUTCDate() + 4 - day);
-    const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
-    const week = Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
-    return String(utc.getUTCFullYear()) + "-" + String(week).padStart(2, "0");
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Seoul",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(date).reduce((acc, part) => {
+      acc[part.type] = part.value;
+      return acc;
+    }, {});
+    const seoulDate = new Date(Number(parts.year), Number(parts.month) - 1, Number(parts.day));
+    seoulDate.setDate(seoulDate.getDate() - seoulDate.getDay());
+    const year = seoulDate.getFullYear();
+    const month = String(seoulDate.getMonth() + 1).padStart(2, "0");
+    const day = String(seoulDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   }
 
   function weeklyBibleCompletedForHome(studentId) {
