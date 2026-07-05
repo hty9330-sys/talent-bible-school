@@ -1,12 +1,14 @@
-const CACHE_NAME = "talent-bible-school-v20260705-03";
+const CACHE_NAME = "talent-bible-school-v20260705-04";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./2026-06-29-auth.css",
   "./2026-07-02-ux-safety.css",
+  "./2026-07-05-award-scroll-patch.css",
   "./2026-06-29-app.js",
   "./2026-07-05-bible-glossary-patch.js",
+  "./2026-07-05-award-scroll-patch.js",
   "./2026-06-30-teacher-match-patch.js",
   "./2026-06-30-weekly-bible-patch.js",
   "./2026-06-30-home-announcements-patch.js",

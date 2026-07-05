@@ -1,0 +1,27 @@
+.award-edit-scroll-feed {
+  max-height: min(560px, 68vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 12px;
+  scrollbar-gutter: stable;
+}
+
+.award-edit-scroll-feed::-webkit-scrollbar {
+  width: 10px;
+}
+
+.award-edit-scroll-feed::-webkit-scrollbar-track {
+  background: rgba(215, 222, 212, 0.45);
+  border-radius: 999px;
+}
+
+.award-edit-scroll-feed::-webkit-scrollbar-thumb {
+  background: #9bb8ad;
+  border-radius: 999px;
+}
+
+@media (max-width: 520px) {
+  .award-edit-scroll-feed {
+    max-height: min(500px, 64vh);
+  }
+}
