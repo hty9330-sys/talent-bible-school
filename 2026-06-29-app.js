@@ -1,7 +1,7 @@
 const CONFIG_KEY = "talent-bible-school:supabase-config";
 const DEFAULT_SUPABASE_URL = "https://eesdzgehomzccrrykrqb.supabase.co";
 const DEFAULT_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlc2R6Z2Vob216Y2NycnlrcnFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2ODc1ODYsImV4cCI6MjA5ODI2MzU4Nn0.DQvThttw0BniIa6zvzM7B2VuqCrPdmpmON4nX3JbOys";
-const reasons = ["출석", "성경암송", "매일성경읽기", "영어학습", "예배태도", "친구도움", "과제완료", "찬양참여", "특별칭찬", "기타"];
+const reasons = ["출석", "성경암송", "매일성경읽기", "청소", "봉사활동", "영어학습", "예배태도", "친구도움", "과제완료", "찬양참여", "특별칭찬", "기타"];
 const quickAmounts = [1, 2, 5, 10];
 const speechRates = [
   { value: 0.45, label: "천천히" },
