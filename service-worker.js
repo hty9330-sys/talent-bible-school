@@ -1,4 +1,4 @@
-const CACHE_NAME = "talent-bible-school-v20260706-05";
+const CACHE_NAME = "talent-bible-school-v20260706-06";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -20,8 +20,8 @@ const APP_SHELL = [
   "./2026-07-06-push-patch.js",
   "./manifest.json",
   "./assets/2026-06-30-deulsaram-header-logo.png",
-  "./assets/icons/deulsaram-app-icon-192.png",
-  "./assets/icons/deulsaram-app-icon-512.png"
+  "./assets/icons/deulsaram-app-icon-192-v2.png",
+  "./assets/icons/deulsaram-app-icon-512-v2.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -50,8 +50,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "달란트 성경학교";
   const options = {
     body: data.body || "",
-    icon: "./assets/icons/deulsaram-app-icon-192.png",
-    badge: "./assets/icons/deulsaram-app-icon-192.png",
+    icon: "./assets/icons/deulsaram-app-icon-192-v2.png",
+    badge: "./assets/icons/deulsaram-app-icon-192-v2.png",
     data: { url: data.url || "./" }
   };
   event.waitUntil(self.registration.showNotification(title, options));
