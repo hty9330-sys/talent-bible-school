@@ -104,6 +104,22 @@
     };
   }
 
+  // setView 가 'deduct'를 허용하도록 (role-access-patch의 화이트리스트에 없어 막히는 문제 해결)
+  if (typeof setView === "function") {
+    const prevSetView = setView;
+    setView = function deductSetView(view) {
+      if (view === "deduct") {
+        if (typeof isAdmin === "function" && isAdmin()) {
+          state.view = "deduct";
+          state.message = "";
+          render();
+          return;
+        }
+      }
+      return prevSetView(view);
+    };
+  }
+
   // 진입 버튼: 아이 상세 화면 (관리자)
   if (typeof studentView === "function") {
     const originalStudentView = studentView;
