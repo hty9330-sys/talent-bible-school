@@ -188,24 +188,19 @@
     Sir: "주인님, 선생님",
     leave: "그대로 두다",
     it: "그것을",
-    "this year": "올해",
     also: "또한, ~도",
     until: "~할 때까지",
     dig: "파다",
     around: "주위에, 둘레에",
-    dig: "파다",
     fertilize: "비료를 주다, 거름을 주다",
     perhaps: "아마, 어쩌면",
     will: "~할 것이다",
     produce: "생산하다, 만들어 내다",
     fruit: "열매",
-    "produce fruit": "열매를 맺다",
     next : "다음",
     but: "그러나",
-    "if not": "그렇지 않으면",
-    can: ~"할 수 있다",
-    "cut down": "베어 버리다, 잘라 넘어뜨리다",
-    "cut it down": "그것을 베어 버리다"
+    can: "할 수 있다"
+    
   });
 
   if (typeof simpleEnglishWords !== "undefined") {
