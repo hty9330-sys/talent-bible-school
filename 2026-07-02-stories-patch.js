@@ -1,7 +1,7 @@
 (() => {
   if (typeof state === "undefined") return;
 
-  state.storyTab = state.storyTab || "announcements";
+  state.storyTab = "board";
   state.storyPosts = state.storyPosts || [];
   state.storyComments = state.storyComments || [];
   state.storyLikes = state.storyLikes || [];
@@ -57,8 +57,8 @@
 
   function storiesView() {
     if (!storyRoleAllowed()) return `<section class="stack"><div class="hero-panel"><span>권한 필요</span><strong>들사람이야기</strong><p>관리자가 권한을 부여한 뒤 사용할 수 있습니다.</p></div></section>`;
-    const tabs = [["announcements", "교회소식"], ["board", "이야기 게시판"]];
-    return `<section class="stack stories-view"><div class="section-heading"><h2>들사람이야기</h2><span>교회소식과 소통</span></div><div class="quick-grid story-tabs">${tabs.map(([value, label]) => `<button class="${state.storyTab === value ? "active" : ""}" type="button" data-story-tab="${value}">${label}</button>`).join("")}</div>${state.storyTab === "board" ? storyBoardPanel() : storiesAnnouncementPanel()}</section>`;
+    // 2026-07-12 교회소식 탭 제거: 교회소식은 홈 화면에서만 노출하고, 이야기 화면은 게시판만 표시
+    return `<section class="stack stories-view"><div class="section-heading"><h2>들사람이야기</h2><span>소통 게시판</span></div>${storyBoardPanel()}</section>`;
   }
 
   const previousClearRemoteStateForStories = clearRemoteState;
