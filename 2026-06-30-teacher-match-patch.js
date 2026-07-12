@@ -52,7 +52,7 @@
   };
 
   studentsView = function patchedStudentsView() {
-    return `<section class="stack"><div class="section-heading"><h2>${isStaff() ? "담당 아이" : "내 아이"}</h2><span>${state.students.length}명</span></div><div class="student-list">${state.students.length === 0 ? `<p class="empty">${isStaff() ? "아직 선생님과 연결된 아이가 없습니다. 관리자가 선생님-아이 연결을 저장해야 합니다." : "아직 연결된 아이가 없습니다. 관리자에게 보호자 연결을 요청하세요."}</p>` : state.students.map((student) => `<button class="student-row" type="button" data-student="${student.id}"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</small></span><b>${student.total_talents} 달란트</b></button>`).join("")}</div></section>`;
+    return `<section class="stack"><div class="section-heading"><h2>${isStaff() ? "담당 아이" : "내 아이"}</h2><span>${state.students.length}명</span></div><div class="student-list" style="max-height:min(560px,68vh);overflow-y:auto;overscroll-behavior:contain;padding-right:6px;">${state.students.length === 0 ? `<p class="empty">${isStaff() ? "아직 선생님과 연결된 아이가 없습니다. 관리자가 선생님-아이 연결을 저장해야 합니다." : "아직 연결된 아이가 없습니다. 관리자에게 보호자 연결을 요청하세요."}</p>` : state.students.map((student) => `<button class="student-row" type="button" data-student="${student.id}"><span><strong>${escapeHtml(student.name)}</strong><small>${escapeHtml(student.grade)} · ${escapeHtml(student.group_name)}</small></span><b>${student.total_talents} 달란트</b></button>`).join("")}</div></section>`;
   };
 
   emptyStudentsView = function patchedEmptyStudentsView() {
