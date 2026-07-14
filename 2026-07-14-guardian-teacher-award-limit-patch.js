@@ -4,10 +4,12 @@
   const DAILY_BIBLE_REASON = "매일성경읽기";
   const DAILY_BIBLE_BONUS_REASON = "매일성경읽기 보너스";
   const BIBLE_LEARNING_REASON = "성경학습";
+  const MISSING_REASON = "누락";
   const allowedGuardianTeacherReasons = new Set([
     DAILY_BIBLE_REASON,
     DAILY_BIBLE_BONUS_REASON,
-    BIBLE_LEARNING_REASON
+    BIBLE_LEARNING_REASON,
+    MISSING_REASON
   ]);
 
   function isGuardianTeacherRestrictedCached(studentId) {
@@ -50,6 +52,7 @@
     if (!payload) return true;
     if (payload.reason === DAILY_BIBLE_REASON) return true;
     if (payload.reason === DAILY_BIBLE_BONUS_REASON) return true;
+    if (payload.reason === MISSING_REASON) return true;
     return payload.reason === BIBLE_LEARNING_REASON && Number(payload.amount) === 2;
   }
 
@@ -59,7 +62,7 @@
   }
 
   function guardianTeacherMessage(studentName) {
-    return `${studentName || "이 아이"}는 선생님 본인이 보호자로 연결되어 있어 매일성경읽기, 매일성경읽기 보너스, 성경학습 2달란트만 기록할 수 있습니다.`;
+    return `${studentName || "이 아이"}는 선생님 본인이 보호자로 연결되어 있어 매일성경읽기, 매일성경읽기 보너스, 성경학습 2달란트, 누락만 기록할 수 있습니다.`;
   }
 
   async function loadGuardianTeacherLinks() {

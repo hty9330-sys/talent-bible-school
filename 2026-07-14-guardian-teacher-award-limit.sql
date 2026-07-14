@@ -5,6 +5,7 @@
 --     - 매일성경읽기
 --     - 매일성경읽기 보너스
 --     - 성경학습 with exactly 2 talents
+--     - 누락
 --
 -- Admins remain unrestricted. Teachers who are not guardians for the selected
 -- student keep the existing assigned-student behavior. A teacher who is linked
@@ -33,7 +34,7 @@ with check (
           where sg.student_id = talent_transactions.student_id
             and sg.guardian_id = (select auth.uid())
         )
-        or reason in ('매일성경읽기', '매일성경읽기 보너스')
+        or reason in ('매일성경읽기', '매일성경읽기 보너스', '누락')
         or (reason = '성경학습' and amount = 2)
       )
     )
@@ -46,7 +47,7 @@ with check (
           and sg.guardian_id = (select auth.uid())
       )
       and (
-        reason in ('매일성경읽기', '매일성경읽기 보너스')
+        reason in ('매일성경읽기', '매일성경읽기 보너스', '누락')
         or (reason = '성경학습' and amount = 2)
       )
     )
@@ -74,7 +75,7 @@ using (
         where sg.student_id = talent_transactions.student_id
           and sg.guardian_id = (select auth.uid())
       )
-      or reason in ('매일성경읽기', '매일성경읽기 보너스')
+      or reason in ('매일성경읽기', '매일성경읽기 보너스', '누락')
       or (reason = '성경학습' and amount = 2)
     )
   )
@@ -88,7 +89,7 @@ using (
         and sg.guardian_id = (select auth.uid())
     )
     and (
-      reason in ('매일성경읽기', '매일성경읽기 보너스')
+      reason in ('매일성경읽기', '매일성경읽기 보너스', '누락')
       or (reason = '성경학습' and amount = 2)
     )
   )
@@ -110,7 +111,7 @@ with check (
         where sg.student_id = talent_transactions.student_id
           and sg.guardian_id = (select auth.uid())
       )
-      or reason in ('매일성경읽기', '매일성경읽기 보너스')
+      or reason in ('매일성경읽기', '매일성경읽기 보너스', '누락')
       or (reason = '성경학습' and amount = 2)
     )
   )
@@ -124,7 +125,7 @@ with check (
         and sg.guardian_id = (select auth.uid())
     )
     and (
-      reason in ('매일성경읽기', '매일성경읽기 보너스')
+      reason in ('매일성경읽기', '매일성경읽기 보너스', '누락')
       or (reason = '성경학습' and amount = 2)
     )
   )
