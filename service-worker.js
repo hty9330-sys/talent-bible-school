@@ -1,4 +1,4 @@
-const CACHE_NAME = "talent-bible-school-v20260706-09";
+const CACHE_NAME = "talent-bible-school-v20260715-01";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -18,6 +18,7 @@ const APP_SHELL = [
   "./2026-07-06-admin-stats-patch.js",
   "./2026-07-06-student-stats-patch.js",
   "./2026-07-06-push-patch.js",
+  "./2026-07-15-stories-engagement-patch.js",
   "./manifest.json",
   "./assets/2026-06-30-deulsaram-header-logo.png",
   "./assets/icons/deulsaram-app-icon-192-v2.png",
@@ -47,9 +48,10 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (error) { data = {}; }
-  const title = data.title || "달란트 성경학교";
+  const isStory = data.type === "story";
+  const title = data.title || (isStory ? "새 이야기가 올라왔어요" : "달란트 성경학교");
   const options = {
-    body: data.body || "",
+    body: data.body || (isStory ? "댓글로 함께 응원해 주세요." : ""),
     icon: "./assets/icons/deulsaram-app-icon-192-v2.png",
     badge: "./assets/icons/deulsaram-app-icon-192-v2.png",
     data: { url: data.url || "./" }
