@@ -199,31 +199,31 @@
     fruit: "열매",
     next : "다음",
     but: "그러나",
-    can: "할 수 있다"
-    therefore:	"그러므로, 그래서"
-kingdom:	"왕국, 나라"
-compare:	"비교하다, 비유하다"
-mustard:	"겨자"
-seed:	"씨앗"
-took:	"가져갔다, 취했다"
-sowed:	"씨를 뿌리다, 심다"
-garden:	"정원, 밭"
-grew:	"자라다"
-became:	"~이 되다"
-tree:	"나무"
-birds:	"새들"
-sky:	"하늘"
-nested:	"둥지를 틀다"
-branch:	"가지"
-again:	"다시"
-leaven:	"누룩, 효모"
-woman:	"여자"
-mixed:	"섞다"
-into:	"~안으로, ~속에"
-pounds:	"파운드(무게 단위)"
-flour:	"밀가루"
-until:	"~할 때까지"
-leavened:	"누룩이 퍼지다, 반죽이 부풀다"
+    can: "할 수 있다",
+    therefore:	"그러므로, 그래서",
+    kingdom:	"왕국, 나라",
+    compare:	"비교하다, 비유하다",
+    mustard:	"겨자",
+    seed:	"씨앗",
+    took:	"가져갔다, 취했다",
+    sowed:	"씨를 뿌리다, 심다",
+    garden:	"정원, 밭",
+    grew:	"자라다",
+    became:	"~이 되다",
+    tree:	"나무",
+    birds:	"새들",
+    sky:	"하늘",
+    nested:	"둥지를 틀다",
+    branch:	"가지",
+    again:	"다시",
+    leaven:	"누룩, 효모",
+    woman:	"여자",
+    mixed:	"섞다",
+    into:	"~안으로, ~속에",
+    pounds:	"파운드(무게 단위)",
+    flour:	"밀가루",
+    until:	"~할 때까지",
+    leavened:	"누룩이 퍼지다, 반죽이 부풀다"
   });
 
   if (typeof simpleEnglishWords !== "undefined") {
