@@ -240,7 +240,18 @@ through	"~을 통하여",
 because	"왜냐하면",
 many	"많은",
 will	"~할 것이다",
-try	"시도하다, 애쓰다"
+try	"시도하다, 애쓰다",
+Make	"만들다, 행하다",
+every	"모든",
+effort	"노력",
+enter	"들어가다",
+door	"문",
+because	"왜냐하면",
+tell	"말하다",
+many	"많은",
+try	"시도하다, 애쓰다",
+enter	"들어가다"
+
   });
 
   if (typeof simpleEnglishWords !== "undefined") {
