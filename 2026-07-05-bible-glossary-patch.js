@@ -226,25 +226,22 @@
     leavened:	"누룩이 퍼지다, 반죽이 부풀다",
     said:	"말했다, 말씀하셨다",
     to:	"~에게",
-
-Make:	"만들다, 행하다",
-every:	"모든",
-effort:	"노력",
-to:	"~하기 위해",
-enter:	"들어가다",
-
-narrow:	"좁은",
-door:	"문",
-because:	"왜냐하면",
-tell:	"말하다",
-you:	"너희에게, 당신에게",
-many:	"많은",
-will:	"~할 것이다",
-try:	"시도하다, 애쓰다",
-enter:	"들어가다",
-and:	"그리고",
-
-able:	"할 수 있는"
+    Make:	"만들다, 행하다",
+    every:	"모든",
+    effort:	"노력",
+    to:	"~하기 위해",
+    enter:	"들어가다",
+    narrow:	"좁은",
+    door:	"문",
+    because:	"왜냐하면",
+    tell:	"말하다",
+    you:	"너희에게, 당신에게",
+    many:	"많은",
+    will:	"~할 것이다",
+    try:	"시도하다, 애쓰다",
+    enter:	"들어가다",
+    and:	"그리고",
+    able:	"할 수 있는"
   
 
   });
