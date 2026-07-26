@@ -223,7 +223,24 @@
     pounds:	"파운드(무게 단위)",
     flour:	"밀가루",
     until:	"~할 때까지",
-    leavened:	"누룩이 퍼지다, 반죽이 부풀다"
+    leavened:	"누룩이 퍼지다, 반죽이 부풀다",
+    Lord	"주님, 주",
+    someone	"어떤 사람, 누군가",
+asked	"물었다 (ask의 과거형)",
+only	"오직, 단지",
+a few	"소수의, 몇몇의",
+people	"사람들",
+
+He	"그분(예수님)",
+said	"말씀하셨다",
+to	"~에게",
+them	"그들에게",
+enter	"들어가다",
+through	"~을 통하여",
+because	"왜냐하면",
+many	"많은",
+will	"~할 것이다",
+try	"시도하다, 애쓰다"
   });
 
   if (typeof simpleEnglishWords !== "undefined") {
