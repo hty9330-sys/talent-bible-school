@@ -332,7 +332,9 @@
     to: "~하기 위해",
     hear: "듣다",
     listen: "듣다, 귀 기울이다",
-    people: "사람들"
+    people: "사람들",
+    repentance: "회개",
+    angels: "천사들"
     
 
 
