@@ -331,7 +331,36 @@
     ears: "귀들, 귀",
     to: "~하기 위해",
     hear: "듣다",
-    listen: "듣다, 귀 기울이다"
+    listen: "듣다, 귀 기울이다".
+    I: "나는",
+    tell: "말하다",
+    you: "너에게, 너희에게",
+    In: "~에서, ~안에",
+    the: "그",
+    same: "같은, 동일한",
+    way: "방식, 방법",
+    there: "거기에, ~이 있다",
+    will: "~할 것이다",
+    be: "있다, 되다",
+    more: "더 많은",
+    joy: "기쁨",
+    in: "~안에",
+    heaven: "하늘, 천국",
+    over: "~에 대하여, ~로 인해",
+    one: "한 명의, 하나의",
+    sinner: "죄인",
+    who: "~하는 사람, 누구",
+    repents: "회개하다",
+    than: "~보다",
+    ninety-nine: "아흔아홉",
+    righteous: "의로운",
+    people: "사람들",
+    need: "필요로 하다",
+    repentance: "회개",
+    is: "있다",
+    presence: "존재, 앞, 면전",
+    of: "~의",
+    angels: "천사들"
 
 
   });
