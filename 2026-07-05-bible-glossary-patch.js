@@ -335,9 +335,9 @@
     people: "사람들",
     repentance: "회개",
     angels: "천사들",
-    nations: "나라",
+    nation: "나라",
     received: "얻은",
-    poseession: "소유",
+    possession: "소유",
     priests: "성직자"
     
 
