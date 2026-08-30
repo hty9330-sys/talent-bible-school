@@ -338,7 +338,12 @@
     nation: "나라",
     received: "얻은",
     possession: "소유",
-    priests: "성직자"
+    priests: "성직자",
+    brother: "형님",
+    always: "항상",
+    yours: "너의것",
+    dead: "죽은",
+    found: "찾다"
     
 
 
