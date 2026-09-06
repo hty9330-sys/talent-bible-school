@@ -343,7 +343,19 @@
     always: "항상",
     yours: "너의것",
     dead: "죽은",
-    found: "찾다"
+    found: "찾다",
+    Unrighteous: "불의한",
+    Yourselves: "너희자신들",
+    Dwellings: "거처들",
+    Friends: "친구들",
+    Worldly: "세속적인",
+    Welcome: "환영하다",
+    Whoever: "누구든지",
+    Wealth: "부",
+    Little: "작은",
+    Means: "수단"
+      
+    
     
 
 
