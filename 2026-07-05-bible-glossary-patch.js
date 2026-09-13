@@ -353,7 +353,12 @@
     whoever: "누구든지",
     wealth: "부",
     little: "작은",
-    means: "수단"
+    means: "수단",
+    persuaded: "설득된",
+    prophets: "선지자",
+    someone: "누군가",
+    rises: "일어나다",
+    told: "밀했다"
       
     
     
