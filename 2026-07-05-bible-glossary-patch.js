@@ -358,7 +358,17 @@
     prophets: "선지자",
     someone: "누군가",
     rises: "일어나다",
-    told: "밀했다"
+    told: "밀했다",
+    repents: "회개하다",
+    against: "-에대하여",
+    rebuke: "나무라다",
+    saying: "말하는것",
+    guard: "지키다",
+    seven: "7",
+    times: "횟수",
+    sins: "죄를 범하다",
+    back: "뒤로",
+    must: "해야한다"
       
     
     
