@@ -368,7 +368,14 @@
     times: "횟수",
     sins: "죄를 범하다",
     back: "뒤로",
-    must: "해야한다"
+    must: "해야한다",
+    destroyed: "파괴했다",
+    drinking: "마시는것",
+    planting: "심는것",
+    building: "건설하는것",
+    selling: "파는것",
+    eating: "먹는것",
+    buying: "사는것"
       
     
     
