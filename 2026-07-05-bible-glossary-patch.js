@@ -375,7 +375,12 @@
     building: "건설하는것",
     selling: "파는것",
     eating: "먹는것",
-    buying: "사는것"
+    buying: "사는것",
+    disciples: "제자들",
+    rebuked: "꾸짖다",
+    infants: "아이들",
+    bringing: "데려오다"
+      
       
     
     
