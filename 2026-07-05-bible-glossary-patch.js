@@ -379,7 +379,10 @@
     disciples: "제자들",
     rebuked: "꾸짖다",
     infants: "아이들",
-    bringing: "데려오다"
+    bringing: "데려오다",
+    understood: "이해했다",
+    accomplished: "성취했다",
+    jerusalem: "에루살렘"
       
       
     
