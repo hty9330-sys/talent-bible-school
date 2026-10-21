@@ -18,7 +18,28 @@
     return Number(student?.quarter_carryover || 0);
   }
 
-  async function runQuarterSettlement() {
+  function toLocalDatetimeInputValue(date) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  // cutoff 시각까지의 거래 내역을 역산해서, 그 시점 각 아이의 보유 달란트(=이전 분기 잔액)를 구한다.
+  // 과거 날짜로 마감할 때(이미 지나간 잔치를 소급 처리할 때) 사용.
+  async function fetchBalanceAsOf(cutoffIso) {
+    const { data, error } = await state.client
+      .from("talent_transactions")
+      .select("student_id, amount")
+      .lte("created_at", cutoffIso)
+      .range(0, 19999);
+    if (error) return { error };
+    const sums = {};
+    (data || []).forEach((tx) => {
+      sums[tx.student_id] = (sums[tx.student_id] || 0) + Number(tx.amount);
+    });
+    return { sums };
+  }
+
+  async function runQuarterSettlement(cutoffDate) {
     if (!(typeof isAdmin === "function" && isAdmin())) {
       setMessage("관리자만 분기 마감을 처리할 수 있습니다.");
       return false;
@@ -28,14 +49,28 @@
       setMessage("등록된 아이가 없습니다.");
       return false;
     }
-    if (!window.confirm(`전체 아이 ${students.length}명의 분기를 마감합니다.\n각자의 현재 보유 달란트가 '이전 분기 잔액'으로 저장되고, 다음 분기 적립은 0부터 다시 계산됩니다.\n(보유 달란트 자체는 바뀌지 않습니다)\n\n잔치 차감을 먼저 모두 마쳤는지 확인하세요. 계속할까요?`)) {
+    const cutoff = cutoffDate instanceof Date && !Number.isNaN(cutoffDate.getTime()) ? cutoffDate : new Date();
+    const cutoffIso = cutoff.toISOString();
+    const isPast = cutoff.getTime() < Date.now() - 60000;
+    const whenText = new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short" }).format(cutoff);
+    if (!window.confirm(`전체 아이 ${students.length}명의 분기를 "${whenText}" 기준으로 마감합니다.\n그 시점까지의 보유 달란트가 '이전 분기 잔액'으로 저장되고, 다음 분기 적립은 0부터 다시 계산됩니다.\n(보유 달란트 자체는 바뀌지 않습니다)\n\n${isPast ? "⚠ 과거 날짜로 소급 마감합니다. 그 시점 이후 거래는 모두 '이번 분기 적립'으로 계산됩니다.\n" : "잔치 차감을 먼저 모두 마쳤는지 확인하세요.\n"}계속할까요?`)) {
       return false;
     }
-    const nowIso = new Date().toISOString();
+
+    let carryoverOf = (s) => Number(s.total_talents || 0);
+    if (isPast) {
+      const { sums, error } = await fetchBalanceAsOf(cutoffIso);
+      if (error) {
+        setMessage(error.message);
+        return false;
+      }
+      carryoverOf = (s) => Math.max(0, Number(sums[s.id] || 0));
+    }
+
     const results = await Promise.all(students.map((s) =>
       state.client.from("students").update({
-        quarter_carryover: Number(s.total_talents || 0),
-        quarter_started_at: nowIso
+        quarter_carryover: carryoverOf(s),
+        quarter_started_at: cutoffIso
       }).eq("id", s.id)
     ));
     const failed = results.find((r) => r.error);
@@ -44,7 +79,7 @@
       return false;
     }
     await loadRemoteData();
-    setMessage(`분기 마감을 완료했습니다. (${students.length}명)`);
+    setMessage(`"${whenText}" 기준으로 분기 마감을 완료했습니다. (${students.length}명)`);
     return true;
   }
 
@@ -75,10 +110,13 @@
       if (!form || root.querySelector("[data-quarter-settlement]")) return;
       const wrap = document.createElement("div");
       wrap.dataset.quarterSettlementWrap = "true";
-      wrap.innerHTML = `<div class="action-row"><button class="secondary-button" type="button" data-quarter-settlement>분기 마감 처리 (잔치 정산)</button></div><p class="empty">잔치 차감을 모두 마친 뒤 누르면, 남은 달란트는 다음 분기로 넘어가고 적립 계산이 0부터 다시 시작됩니다.</p>`;
+      wrap.className = "form-panel compact";
+      wrap.innerHTML = `<h3>분기 마감 처리 (잔치 정산)</h3><label>마감 기준 시각<input type="datetime-local" data-quarter-settlement-at value="${toLocalDatetimeInputValue(new Date())}" /></label><div class="action-row"><button class="secondary-button" type="button" data-quarter-settlement>분기 마감 처리</button></div><p class="empty">잔치 차감을 모두 마친 뒤 누르면, 기준 시각까지의 보유 달란트가 다음 분기로 넘어가고 적립 계산이 0부터 다시 시작됩니다. 이미 지나간 잔치를 소급 처리하려면 기준 시각을 그날로 바꾸세요.</p>`;
       form.insertAdjacentElement("afterend", wrap);
       root.querySelector("[data-quarter-settlement]")?.addEventListener("click", async () => {
-        await runQuarterSettlement();
+        const input = root.querySelector("[data-quarter-settlement-at]");
+        const cutoff = input?.value ? new Date(input.value) : new Date();
+        await runQuarterSettlement(cutoff);
         render();
       });
     };
