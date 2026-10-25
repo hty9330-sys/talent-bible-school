@@ -1,0 +1,68 @@
+==========================================================
+2026-10-25 업그레이드 기록 — 홈 '아이들 달란트 보유 현황' 표(board) 변경
+==========================================================
+
+[작업 날짜]
+- 2026-10-25
+
+[대상 원본 파일]
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\2026-07-08-home-talent-chart-patch.js
+  (홈 화면의 '아이들 달란트 보유 현황'을 세로 목록으로 그리던 기존 패치. 수정하지 않고 그대로 보존함.)
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\index.html
+  (스크립트 로드 1줄 추가)
+
+[생성된 업그레이드 파일]
+- C:\Users\lg\OneDrive\Desktop\codex\.codex\2026-06-29\2026-10-25-home-talent-board-patch.js (신규)
+
+[업그레이드 목적]
+- 홈 '아이들 달란트 보유 현황'판을 요청에 맞게 표 형태로 변경.
+  · 가로(열): 아이 이름을 가나다순으로 나열
+  · 세로(행): 이전(이전 분기 잔액) / 이번(이번 분기 적립) / 총(총 보유)
+  · 각 칸은 숫자만 표시
+
+[변경 전 문제점 / 상태]
+- 기존에는 한 명당 한 줄인 세로 목록으로, 한 줄에 "이름 | 이전 X · 이번 Y (총 Z)" 형태였음.
+- 여러 아이를 한눈에 가로로 비교하기 어려웠음.
+
+[변경한 내용과 이유]
+- 신규 패치 2026-10-25-home-talent-board-patch.js 추가.
+  · homeView(홈 렌더 함수)를 한 번 더 감싸, 기존 패치가 만든 결과(data-home-talent-chart 블록)를
+    표(data-home-talent-board)로 치환함. 원본 파일을 직접 고치지 않아 되돌리기 쉽게 설계.
+  · 표 구조: thead = [구분, 이름1, 이름2 ...](이름 가나다순), tbody = 이전/이번/총 3개 행.
+  · 이름이 많을 때를 대비해 가로 스크롤(.talent-board-scroll)과 맨 왼쪽 '구분' 열 고정(sticky) 적용.
+  · 숫자 산출은 기존과 동일: 이번 = total_talents - quarter_carryover, 이전 = quarter_carryover, 총 = total_talents.
+- index.html에 아래 1줄을 2026-07-08/2026-10-21 패치 뒤(마지막)에 추가:
+    <script defer src="./2026-10-25-home-talent-board-patch.js?v=20261025-01"></script>
+  (defer 로드 순서상 반드시 home-talent-chart 패치보다 뒤에 있어야 교체가 동작함.)
+
+[데이터베이스 또는 설정 변경 사항]
+- 없음. DB 스키마/정책 변경 없음. 기존 students.total_talents, students.quarter_carryover 컬럼을 그대로 읽어 표시만 변경.
+
+[실행 및 검증 결과]
+- node --check 2026-10-25-home-talent-board-patch.js → 구문 OK.
+- index.html에 스크립트 라인 정상 추가 확인.
+- (주의) 실제 브라우저에서 선생님/관리자 계정 로그인 후 홈 화면 표 렌더링은 아직 육안 확인 전.
+  배포(사이트)에 올린 뒤 로그인하여 표/스크롤/숫자 값 확인 권장.
+
+[알려진 문제와 추가 개선 후보]
+- homeView 결과 전체를 <template>로 파싱 후 다시 직렬화하므로, 홈 마크업이 매우 특수한 경우
+  미세한 재직렬화 차이가 생길 수 있음(일반 마크업에서는 문제 없음).
+- 개선 후보: 아이 수가 매우 많을 때 열 폭/가독성 조정, '총' 숨김 옵션, 이름 클릭 시 상세 이동 등.
+
+[이전 버전으로 복구하는 방법]
+1) 가장 간단: 커밋 전이면
+   - index.html에서 추가한 아래 1줄 삭제:
+       <script defer src="./2026-10-25-home-talent-board-patch.js?v=20261025-01"></script>
+   - 신규 파일 삭제: 2026-10-25-home-talent-board-patch.js
+   그러면 기존 세로 목록(2026-07-08-home-talent-chart-patch.js)으로 즉시 되돌아감.
+2) git 사용 시(커밋/머지 후):
+   - 변경 파일만 되돌리기:
+       git checkout -- index.html
+       git clean -f 2026-10-25-home-talent-board-patch.js
+   - 또는 이번 작업 커밋 전체 되돌리기:
+       git revert <이번 커밋 해시>   (또는 git reset --hard <이전 커밋>)
+
+[다음 작업 이어가기용 메모]
+- 홈 현황판 렌더 진입점: 2026-07-08-home-talent-chart-patch.js 의 homeView 래핑(data-home-talent-chart).
+- 이번 표 패치: 2026-10-25-home-talent-board-patch.js 의 homeView 재래핑(data-home-talent-board).
+- 숫자 의미/분기 로직 원본: 2026-10-21-quarter-settlement-patch.js (quarterEarned/quarterCarryover).
