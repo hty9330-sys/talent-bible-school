@@ -382,7 +382,10 @@
     bringing: "데려오다",
     understood: "이해했다",
     accomplished: "성취했다",
-    jerusalem: "에루살렘"
+    jerusalem: "에루살렘",
+    extorted: "갈취하다",
+    salvation: "구원"
+      
       
       
     
