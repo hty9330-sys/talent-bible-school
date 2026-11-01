@@ -384,7 +384,10 @@
     accomplished: "성취했다",
     jerusalem: "에루살렘",
     extorted: "갈취하다",
-    salvation: "구원"
+    salvation: "구원",
+    afflictions: "환난",
+    compelled: "강제하다",
+    encounter: "맞닥뜨리다"
       
       
       
